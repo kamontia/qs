@@ -1,10 +1,10 @@
 package main
 
 import (
-	"os"
 	"fmt"
-	"os/exec"
 	"github.com/codegangsta/cli"
+	"os"
+	"os/exec"
 )
 
 func main() {
@@ -30,6 +30,6 @@ func main() {
 
 		fmt.Println(string(out))
 		return nil
-	  }
+	}
 	app.Run(os.Args)
 }
