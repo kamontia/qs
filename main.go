@@ -2,7 +2,8 @@ package main
 
 import (
 	"os"
-    "fmt"
+	"fmt"
+	"os/exec"
 	"github.com/codegangsta/cli"
 )
 
@@ -20,7 +21,14 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
-		fmt.Println("Hello git-fixup!")
+		out, err := exec.Command("git", "status").Output()
+
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		fmt.Println(string(out))
 		return nil
 	  }
 	app.Run(os.Args)
