@@ -32,6 +32,14 @@ func main() {
 		}
 
 		fmt.Println(string(out))
+		// rebase
+		os.Setenv("GIT_EDITOR", ":")
+		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+		fmt.Println("*** rebase with autosquash ***")
+		if err = cmd.Run(); err != nil {
+			fmt.Println(err)
+		}
+
 		return nil
 	}
 	app.Run(os.Args)
