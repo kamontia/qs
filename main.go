@@ -17,31 +17,44 @@ func main() {
 	app.Email = ""
 	app.Usage = ""
 
-	app.Flags = GlobalFlags
+	app.Flags = []cli.Flag{
+		cli.IntFlag{
+			Name:  "number, n",
+			Usage: "Specify suqash number",
+		},
+	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
-		// fix up commit
-		fmt.Println("*** git commit --fixup ***")
-		out, err := exec.Command("git", "commit", "--fixup=HEAD").Output()
+		// Parse number(--number, -n) parameter
+		switch number := c.Int("number"); number {
+		case 0:
+			// fix up commit
+			fmt.Println("*** git commit --fixup ***")
+			out, err := exec.Command("git", "commit", "--fixup=HEAD").Output()
 
-		if err != nil {
+			if err != nil {
+				fmt.Println(string(out))
+				os.Exit(1)
+			}
+
 			fmt.Println(string(out))
-			os.Exit(1)
-		}
+			// rebase
+			os.Setenv("GIT_EDITOR", ":")
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+			// Transfer the command I/O to Standard I/O
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			fmt.Println("*** rebase with autosquash ***")
+			if err = cmd.Run(); err != nil {
+				fmt.Println(err)
+			}
 
-		fmt.Println(string(out))
-		// rebase
-		os.Setenv("GIT_EDITOR", ":")
-		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
-		// Transfer the command I/O to Standard I/O
-		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-		fmt.Println("*** rebase with autosquash ***")
-		if err = cmd.Run(); err != nil {
-			fmt.Println(err)
+		default:
+			// Only Disply
+			fmt.Println("number", number)
 		}
 
 		return nil
