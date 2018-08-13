@@ -17,11 +17,25 @@ func main() {
 	app.Email = ""
 	app.Usage = ""
 
-	app.Flags = GlobalFlags
+	//	app.Flags = GlobalFlags
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
+	// flags
+	app.Flags = []cli.Flag{
+		cli.BoolFlag{
+			Name:  "force, f",
+			Usage: "force option",
+		},
+	}
+
 	app.Action = func(c *cli.Context) error {
+
+		var force bool = c.Bool("f")
+		if !force {
+			os.Exit(1)
+		}
+
 		// fix up commit
 		fmt.Println("*** git commit --fixup ***")
 		out, err := exec.Command("git", "commit", "--fixup=HEAD").Output()
