@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/codegangsta/cli"
 	"os"
 	"os/exec"
-
-	"github.com/codegangsta/cli"
+	"strconv"
 )
 
 func main() {
@@ -22,11 +22,45 @@ func main() {
 			Name:  "number, n",
 			Usage: "Specify suqash number",
 		},
+		cli.BoolFlag{
+			Name:  "force, f",
+			Usage: "Force update",
+		},
 	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
+		// Intaractive
+		var force bool = c.Bool("force")
+		var num string = strconv.Itoa(c.Int("number"))
+		var stdin string
+
+		if force {
+			fmt.Println("*** force update ***")
+		} else {
+			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
+			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
+			fmt.Println(string(out))
+			if err != nil {
+				os.Exit(1)
+			}
+			for {
+				fmt.Scan(&stdin)
+				switch stdin {
+				case "y":
+					fmt.Println("*** Fixup! ***")
+				case "n":
+					fmt.Println("*** Abort! ***")
+					os.Exit(1)
+				default:
+					fmt.Println("*** You can input y or n ***")
+					continue
+				}
+				break
+			}
+		}
+
 		// Parse number(--number, -n) parameter
 		switch number := c.Int("number"); number {
 		case 0:
