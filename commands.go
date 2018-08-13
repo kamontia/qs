@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	//	"github.com/kamontia/git-fixup/commands"
 )
 
 var GlobalFlags = []cli.Flag{}
