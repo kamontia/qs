@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -92,6 +93,7 @@ func main() {
 			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 
 			if err != nil {
+				fmt.Print(string(out))
 				fmt.Print(err)
 				os.Exit(1)
 			}
@@ -102,10 +104,40 @@ func main() {
 				commitHashList = append(commitHashList, v)
 			}
 
-			for i := 0; i < number; i++ {
-				fmt.Println(commitHashList[i])
+			tests := []string{
+				"git",
+			}
+			for _, test := range tests {
+				if k, err := exec.LookPath(test); err != nil {
+					fmt.Println(k)
+					log.Print(err)
+				}
+
 			}
 
+			for i := 0; i < number; i++ {
+				fixUpStr := fmt.Sprintf("--squash=%s", commitHashList[i])
+				cmd := exec.Command("git", "commit", fixUpStr)
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+				if err = cmd.Run(); err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+			}
+
+			// rebase
+			os.Setenv("GIT_EDITOR", ":")
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+			// Transfer the command I/O to Standard I/O
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			fmt.Println("*** rebase with autosquash ***")
+			if err = cmd.Run(); err != nil {
+				fmt.Println(err)
+			}
 		}
 
 		return nil
