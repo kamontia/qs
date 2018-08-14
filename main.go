@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/codegangsta/cli"
 	"os"
 	"os/exec"
+	"regexp"
 	"strconv"
+
+	"github.com/codegangsta/cli"
 )
 
 func main() {
@@ -87,8 +89,23 @@ func main() {
 			}
 
 		default:
-			// Only Disply
-			fmt.Println("number", number)
+			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
+
+			if err != nil {
+				fmt.Print(err)
+				os.Exit(1)
+			}
+
+			var commitHashList []string
+
+			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+				commitHashList = append(commitHashList, v)
+			}
+
+			for i := 0; i < number; i++ {
+				fmt.Println(commitHashList[i])
+			}
+
 		}
 
 		return nil
