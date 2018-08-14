@@ -1,0 +1,15 @@
+version: 2
+jobs:
+  build:
+    environment:
+      - GOPATH: /home/circleci/go
+    docker:
+      - image: circleci/golang:1.9
+    steps:
+      - checkout
+      - run: go get github.com/kamontia/git-fixup
+      - run:
+          command: |
+            cd ~/project
+            go build -o git-fixup
+      - run: ./script/test.sh
