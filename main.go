@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -44,8 +43,8 @@ func main() {
 		} else {
 			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
 			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
-			fmt.Println(string(out))
 			if err != nil {
+				fmt.Print(out)
 				os.Exit(1)
 			}
 			for {
@@ -90,31 +89,47 @@ func main() {
 			}
 
 		default:
+			var commitHashList []string
+			var commitMsg []string
+			/* Get commit hash */
 			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-
 			if err != nil {
 				fmt.Print(string(out))
 				fmt.Print(err)
 				os.Exit(1)
 			}
 
-			var commitHashList []string
-
 			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 				commitHashList = append(commitHashList, v)
 			}
+			/* (END)Get commit hash */
 
-			tests := []string{
-				"git",
+			/* Get commit message */
+			out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+			if err != nil {
+				fmt.Print(string(out))
+				fmt.Print(err)
+				os.Exit(1)
 			}
-			for _, test := range tests {
-				if k, err := exec.LookPath(test); err != nil {
-					fmt.Println(k)
-					log.Print(err)
+			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+				commitMsg = append(commitMsg, v)
+			}
+			/* (END)Get commit message */
+
+			/* Display commit hash and message. The [pickup|..] strings is colored */
+			for i := 0; i < len(commitMsg)-1; i++ {
+
+				/* (WIP) Switch output corresponded to do squash */
+				if i > 1 && i < 8 {
+					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s\tsquash! %s\n", i, commitHashList[i], commitMsg[i])
+				} else {
+					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s\t%s\n", i, commitHashList[i], commitMsg[i])
 				}
-
 			}
+			/* (END)Display commit hash and message */
+			os.Exit(1) // This line will be removed.
 
+			/* (WIP) */
 			for i := 0; i < number; i++ {
 				fixUpStr := fmt.Sprintf("--squash=%s", commitHashList[i])
 				cmd := exec.Command("git", "commit", fixUpStr)
@@ -126,6 +141,7 @@ func main() {
 					os.Exit(1)
 				}
 			}
+			/* (END) */
 
 			// rebase
 			os.Setenv("GIT_EDITOR", ":")
