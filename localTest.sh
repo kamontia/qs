@@ -2,18 +2,18 @@
 set -xe
 set -eo pipefail
 
-TESTDIR=test-git-fixup-$$
+TESTDIR=test-qs-$$
 
 mkdir -p $TESTDIR
 go build
-cp ./git-fixup $TESTDIR
+cp ./qs $TESTDIR
 cd $TESTDIR
 
 :
 : prepare git
 :
 git init
-git config --local user.email "git-fixup@example.com"
+git config --local user.email "qs@example.com"
 git config --local user.name "git fixup"
 git commit --allow-empty -m "Initial commit"
 
@@ -29,6 +29,6 @@ done
 
 
 git log --oneline
-./git-fixup -n 5
+./qs 3..6 -n 3
 git log --oneline
 git diff HEAD^..HEAD --name-only
