@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -91,6 +92,7 @@ func main() {
 		default:
 			var commitHashList []string
 			var commitMsg []string
+			var commitNewMsg []string
 			/* Get commit hash */
 			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 			if err != nil {
@@ -113,26 +115,34 @@ func main() {
 			}
 			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 				commitMsg = append(commitMsg, v)
+				commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
 			}
 			/* (END)Get commit message */
 
 			/* Display commit hash and message. The [pickup|..] strings is colored */
-			for i := 0; i < len(commitMsg)-1; i++ {
-
+			for i := len(commitMsg) - 1; i >= 0; i-- {
 				/* (WIP) Switch output corresponded to do squash */
-				if i > 1 && i < 8 {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s\tsquash! %s\n", i, commitHashList[i], commitMsg[i])
+				if c.Int("number") > i {
+					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[number])
 				} else {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s\t%s\n", i, commitHashList[i], commitMsg[i])
+					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
 				}
 			}
 			/* (END)Display commit hash and message */
-			os.Exit(1) // This line will be removed.
 
-			/* (WIP) */
-			for i := 0; i < number; i++ {
-				fixUpStr := fmt.Sprintf("--squash=%s", commitHashList[i])
-				cmd := exec.Command("git", "commit", fixUpStr)
+			/* (WIP) git rebase */
+			/**
+			git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
+			*/
+			log.Println("Logged display")
+			/* Suppress vim editor launching */
+			os.Setenv("GIT_EDITOR", ":")
+			/* (END) Suppress vim editor launching */
+			for i := number; i >= 0; i-- {
+				speciedHead := fmt.Sprintf("HEAD~%d", i)
+				speciedExec := fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[number])
+				cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
+
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
@@ -141,19 +151,22 @@ func main() {
 					os.Exit(1)
 				}
 			}
-			/* (END) */
+			/* (END) git rebase */
 
-			// rebase
-			os.Setenv("GIT_EDITOR", ":")
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+			log.Println("Logged display")
+			/* git rebase with autosquash option */
+			speciedHead := fmt.Sprintf("HEAD~%d", number+1)
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead)
 			// Transfer the command I/O to Standard I/O
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
-			fmt.Println("*** rebase with autosquash ***")
+
 			if err = cmd.Run(); err != nil {
+				fmt.Println("*** rebase failed ***")
 				fmt.Println(err)
 			}
+			fmt.Println("*** rebase completed ***")
 		}
 
 		return nil
