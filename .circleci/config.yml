@@ -11,5 +11,5 @@ jobs:
       - run:
           command: |
             cd ~/project
-            go build -o git-fixup
+            go build
       - run: ./script/test.sh
