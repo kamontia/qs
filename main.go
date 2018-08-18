@@ -10,6 +10,16 @@ import (
 	"strconv"
 )
 
+func logrus_init(d bool) {
+	var debug bool = d
+	log.SetOutput(os.Stdout)
+	if debug {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+}
+
 func main() {
 
 	app := cli.NewApp()
@@ -37,14 +47,8 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
-		// logrus init
-		var debug bool = c.Bool("debug")
-		log.SetOutput(os.Stdout)
-		if debug {
-			log.SetLevel(log.InfoLevel)
-		} else {
-			log.SetLevel(log.WarnLevel)
-		}
+
+		logrus_init(c.Bool("debug"))
 
 		// Intaractive
 		var force bool = c.Bool("force")
