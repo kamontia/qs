@@ -1,4 +1,6 @@
 # qs
+[![CircleCI](https://circleci.com/gh/kamontia/qs.svg?style=svg)](https://circleci.com/gh/kamontia/qs)
+
 ## Description
 'qs' is the git support command without the interactive editor.  
 You can squash some commits very quickly with the one-liner.
