@@ -20,6 +20,37 @@ func logrus_init(d bool) {
 	}
 }
 
+func check_current_commit(f bool, n int) {
+	var force bool = f
+	var num string = strconv.Itoa(n)
+	var stdin string
+
+	if force {
+		log.Info("*** force update ***")
+	} else {
+		fmt.Println("*** Do you squash the following commits?(y/n) ***")
+		out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
+		if err != nil {
+			log.Error(out)
+			os.Exit(1)
+		}
+		for {
+			fmt.Scan(&stdin)
+			switch stdin {
+			case "y":
+				log.Info("*** Fixup! ***")
+			case "n":
+				log.Info("*** Abort! ***")
+				os.Exit(1)
+			default:
+				log.Info("*** You can input y or n ***")
+				continue
+			}
+			break
+		}
+	}
+}
+
 func main() {
 
 	app := cli.NewApp()
@@ -49,36 +80,7 @@ func main() {
 	app.Action = func(c *cli.Context) error {
 
 		logrus_init(c.Bool("debug"))
-
-		// Intaractive
-		var force bool = c.Bool("force")
-		var num string = strconv.Itoa(c.Int("number"))
-		var stdin string
-
-		if force {
-			log.Info("*** force update ***")
-		} else {
-			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
-			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
-			if err != nil {
-				log.Error(out)
-				os.Exit(1)
-			}
-			for {
-				fmt.Scan(&stdin)
-				switch stdin {
-				case "y":
-					log.Info("*** Fixup! ***")
-				case "n":
-					log.Info("*** Abort! ***")
-					os.Exit(1)
-				default:
-					log.Info("*** You can input y or n ***")
-					continue
-				}
-				break
-			}
-		}
+		check_current_commit(c.Bool("force"), c.Int("number"))
 
 		// Parse number(--number, -n) parameter
 		switch number := c.Int("number"); number {
