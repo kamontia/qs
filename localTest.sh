@@ -2,11 +2,12 @@
 set -xe
 set -eo pipefail
 
-TESTDIR=test-git-fixup-$$
+ExecComamnd=$(basename $(pwd))
+TESTDIR=test-${ExecComamnd}-$$
 
 mkdir -p $TESTDIR
 go build
-cp ./git-fixup $TESTDIR
+cp ./${ExecComamnd} $TESTDIR
 cd $TESTDIR
 
 :
@@ -29,6 +30,6 @@ done
 
 
 git log --oneline
-./git-fixup -n 5
+./${ExecComamnd} -n 5
 git log --oneline
 git diff HEAD^..HEAD --name-only
