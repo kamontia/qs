@@ -29,6 +29,8 @@ done
 
 
 git log --oneline
-./qs 3..6 -n 3
+startIndex=3
+endIndex=6
+./qs ${startIndex}..${endIndex}
 git log --oneline
-git diff HEAD^..HEAD --name-only
+git diff HEAD~4..HEAD~3 --name-only
