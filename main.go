@@ -135,9 +135,9 @@ func main() {
 			for i := len(commitMsg) - 1; i >= 0; i-- {
 				/* (WIP) Switch output corresponded to do squash */
 				if c.Int("number") > i {
-					log.Info("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[number])
+					log.Info(strconv.Itoa(i) + " \x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m" + commitHashList[i] + " " + commitNewMsg[number])
 				} else {
-					log.Info("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
+					log.Info(strconv.Itoa(i) + " \x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m" + commitHashList[i] + " " + commitMsg[i])
 				}
 			}
 			/* (END)Display commit hash and message */
