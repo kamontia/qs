@@ -43,6 +43,10 @@ func main() {
 		var iBreakNumber int
 		iNum, _ := strconv.Atoi(num)
 		var error error
+		var commitHashList []string
+		var commitMsg []string
+		var commitNewMsg []string
+		var reflogHashList []string
 
 		/* Pick up squash range */
 		/* TODO: Check error strictly */
@@ -75,9 +79,59 @@ func main() {
 		}
 		/* (END) Pick up squash range */
 
+		/* Get commit hash */
+		out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
+		if err != nil {
+			fmt.Print(string(out))
+			fmt.Print(err)
+			os.Exit(1)
+		}
+
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			commitHashList = append(commitHashList, v)
+		}
+		/* (END)Get commit hash */
+
+		/* Get reflog hash */
+		out, err = exec.Command("git", "reflog", "--format=%h").Output()
+		if err != nil {
+			fmt.Print(string(out))
+			fmt.Print(err)
+			os.Exit(1)
+		}
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			reflogHashList = append(reflogHashList, v)
+		}
+		/* (END)Get reflog hash */
+
+		/* Get commit message */
+		out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+		if err != nil {
+			fmt.Print(string(out))
+			fmt.Print(err)
+			os.Exit(1)
+		}
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			commitMsg = append(commitMsg, v)
+			commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
+		}
+		/* (END)Get commit message */
+
+		/* Display commit hash and message. The [pickup|..] strings is colored */
+		for i := len(commitMsg) - 1; i >= 0; i-- {
+			/* (WIP) Switch output corresponded to do squash */
+			if iNum > i && i >= iBreakNumber {
+				fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[iNum])
+			} else {
+				fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
+			}
+		}
+		/* (END)Display commit hash and message */
+
 		if force {
 			fmt.Println("*** force update ***")
 		} else {
+
 			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
 			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
 			if err != nil {
@@ -125,58 +179,6 @@ func main() {
 			}
 
 		default:
-			var commitHashList []string
-			var commitMsg []string
-			var commitNewMsg []string
-			var reflogHashList []string
-			/* Get commit hash */
-			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-			if err != nil {
-				fmt.Print(string(out))
-				fmt.Print(err)
-				os.Exit(1)
-			}
-
-			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-				commitHashList = append(commitHashList, v)
-			}
-			/* (END)Get commit hash */
-
-			/* Get reflog hash */
-			out, err = exec.Command("git", "reflog", "--format=%h").Output()
-			if err != nil {
-				fmt.Print(string(out))
-				fmt.Print(err)
-				os.Exit(1)
-			}
-			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-				reflogHashList = append(reflogHashList, v)
-			}
-			/* (END)Get reflog hash */
-
-			/* Get commit message */
-			out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
-			if err != nil {
-				fmt.Print(string(out))
-				fmt.Print(err)
-				os.Exit(1)
-			}
-			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-				commitMsg = append(commitMsg, v)
-				commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
-			}
-			/* (END)Get commit message */
-
-			/* Display commit hash and message. The [pickup|..] strings is colored */
-			for i := len(commitMsg) - 1; i >= 0; i-- {
-				/* (WIP) Switch output corresponded to do squash */
-				if iNum > i && i >= iBreakNumber {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[iNum])
-				} else {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
-				}
-			}
-			/* (END)Display commit hash and message */
 
 			/* (WIP) git rebase */
 			/**
