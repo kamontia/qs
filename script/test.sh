@@ -34,7 +34,7 @@ test () {
   EXPECTED_ADDED_FILE_NUM=$(( $NUM + 1 ))
 
   git log --oneline
-  ./${ExecComamnd} 0..${NUM} -d -f
+  ./${ExecComamnd}  -n 0..5 -d -f
   git log --oneline
   ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
 
