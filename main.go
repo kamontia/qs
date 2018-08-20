@@ -36,43 +36,46 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	var force bool = f
 	var sNum = strconv.Itoa(iNum)
 	log.SetOutput(os.Stdout)
+
+	/* Get commit hash */
+	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		commitHashList = append(commitHashList, v)
+	}
+	/* (END)Get commit hash */
+
+	/* Get reflog hash */
+	out, err = exec.Command("git", "reflog", "--format=%h").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		reflogHashList = append(reflogHashList, v)
+	}
+	/* (END)Get reflog hash */
+
+	/* Get commit message */
+	out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		commitMsg = append(commitMsg, v)
+		commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
+	}
+	/* (END)Get commit message */
 	if force {
 		log.Info("*** force update ***")
 	} else {
-		/* Get commit hash */
-		out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			commitHashList = append(commitHashList, v)
-		}
-		/* (END)Get commit hash */
-
-		/* Get reflog hash */
-		out, err = exec.Command("git", "reflog", "--format=%h").Output()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			reflogHashList = append(reflogHashList, v)
-		}
-		/* (END)Get reflog hash */
-
-		/* Get commit message */
-		out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
-		if err != nil {
-			log.Error(err)
-			os.Exit(1)
-		}
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			commitMsg = append(commitMsg, v)
-			commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
-		}
-		/* (END)Get commit message */
 		/* Display commit hash and message. The [pickup|..] strings is colored */
 		for i := len(commitMsg) - 1; i >= 0; i-- {
 			/* Switch output corresponded to do squash */
