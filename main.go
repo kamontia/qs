@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"regexp"
@@ -10,7 +9,102 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
+	log "github.com/sirupsen/logrus"
 )
+
+/* Definisiotn */
+var stdin string
+var iNum int
+var iBreakNumber int
+var rangeArray []string
+var commitHashList []string
+var commitMsg []string
+var commitNewMsg []string
+var reflogHashList []string
+
+func logrus_init(d bool) {
+	var debug bool = d
+	log.SetOutput(os.Stdout)
+	if debug {
+		log.SetLevel(log.InfoLevel)
+	} else {
+		log.SetLevel(log.WarnLevel)
+	}
+}
+
+func check_current_commit(f bool, iNum int, iBreakNumber int) {
+	var force bool = f
+	var sNum = strconv.Itoa(iNum)
+	log.SetOutput(os.Stdout)
+	if force {
+		log.Info("*** force update ***")
+	} else {
+		/* Get commit hash */
+		out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			commitHashList = append(commitHashList, v)
+		}
+		/* (END)Get commit hash */
+
+		/* Get reflog hash */
+		out, err = exec.Command("git", "reflog", "--format=%h").Output()
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			reflogHashList = append(reflogHashList, v)
+		}
+		/* (END)Get reflog hash */
+
+		/* Get commit message */
+		out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+		if err != nil {
+			log.Error(err)
+			os.Exit(1)
+		}
+		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+			commitMsg = append(commitMsg, v)
+			commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
+		}
+		/* (END)Get commit message */
+		/* Display commit hash and message. The [pickup|..] strings is colored */
+		for i := len(commitMsg) - 1; i >= 0; i-- {
+			/* Switch output corresponded to do squash */
+			if iNum > i && i >= iBreakNumber {
+				log.Info("[" + strconv.Itoa(i) + "]" + " \x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m" + commitHashList[i] + " " + commitNewMsg[iNum])
+			} else {
+				log.Info("[" + strconv.Itoa(i) + "]" + " \x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m" + commitHashList[i] + " " + commitMsg[i])
+			}
+		}
+		/* (END) Display commit hash and message */
+		fmt.Println("*** Do you squash the following commits?(y/n) ***")
+		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
+		if err != nil {
+			log.Error(out)
+			os.Exit(1)
+		}
+		for {
+			fmt.Scan(&stdin)
+			switch stdin {
+			case "y":
+				log.Info("*** Fixup! ***")
+			case "n":
+				log.Info("*** Abort! ***")
+				os.Exit(1)
+			default:
+				log.Info("*** You can input y or n ***")
+				continue
+			}
+			break
+		}
+	}
+}
 
 func main() {
 
@@ -30,152 +124,75 @@ func main() {
 			Name:  "force, f",
 			Usage: "Force update",
 		},
+		cli.BoolFlag{
+			Name:  "debug, d",
+			Usage: "Show verbose logging",
+		},
 	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
-		// Intaractive
-		var force bool = c.Bool("force")
-		var num string = strconv.Itoa(c.Int("number"))
-		var stdin string
-		var rangeArray []string
-		var iBreakNumber int
-		iNum, _ := strconv.Atoi(num)
-		var error error
-		var commitHashList []string
-		var commitMsg []string
-		var commitNewMsg []string
-		var reflogHashList []string
-
 		/* Pick up squash range */
 		/* TODO: Check error strictly */
+		var error error
 		for _, v := range os.Args {
 			if strings.Contains(v, "..") {
 				rangeArray = strings.Split(v, "..")
 				iNum, error = strconv.Atoi(rangeArray[0])
 				if error != nil {
-
+					log.Error(error)
+					os.Exit(1)
 				}
 				iBreakNumber, error = strconv.Atoi(rangeArray[1])
 				if error != nil {
-					fmt.Println(error)
+					log.Error(error)
 					os.Exit(1)
 				}
-
 				if iNum < iBreakNumber {
 					tmp := iNum
 					iNum = iBreakNumber
 					iBreakNumber = tmp
+				} else {
+					tmp := iBreakNumber
+					iBreakNumber = iNum
+					iNum = tmp
 				}
-
 				break
 			}
 		}
 
-		if len(rangeArray) == 0 {
-			fmt.Println("ERROR: argument erorr")
+		if len(rangeArray) != 2 {
+			log.Error("ERROR: argument erorr")
 			os.Exit(1)
 		}
 		/* (END) Pick up squash range */
+		logrus_init(c.Bool("debug"))
+		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
-		/* Get commit hash */
-		out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-		if err != nil {
-			fmt.Print(string(out))
-			fmt.Print(err)
-			os.Exit(1)
-		}
-
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			commitHashList = append(commitHashList, v)
-		}
-		/* (END)Get commit hash */
-
-		/* Get reflog hash */
-		out, err = exec.Command("git", "reflog", "--format=%h").Output()
-		if err != nil {
-			fmt.Print(string(out))
-			fmt.Print(err)
-			os.Exit(1)
-		}
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			reflogHashList = append(reflogHashList, v)
-		}
-		/* (END)Get reflog hash */
-
-		/* Get commit message */
-		out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
-		if err != nil {
-			fmt.Print(string(out))
-			fmt.Print(err)
-			os.Exit(1)
-		}
-		for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-			commitMsg = append(commitMsg, v)
-			commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
-		}
-		/* (END)Get commit message */
-
-		/* Display commit hash and message. The [pickup|..] strings is colored */
-		for i := len(commitMsg) - 1; i >= 0; i-- {
-			/* (WIP) Switch output corresponded to do squash */
-			if iNum > i && i >= iBreakNumber {
-				fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[iNum])
-			} else {
-				fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
-			}
-		}
-		/* (END)Display commit hash and message */
-
-		if force {
-			fmt.Println("*** force update ***")
-		} else {
-
-			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
-			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
-			if err != nil {
-				fmt.Print(out)
-				os.Exit(1)
-			}
-			for {
-				fmt.Scan(&stdin)
-				switch stdin {
-				case "y":
-					fmt.Println("*** Fixup! ***")
-				case "n":
-					fmt.Println("*** Abort! ***")
-					os.Exit(1)
-				default:
-					fmt.Println("*** You can input y or n ***")
-					continue
-				}
-				break
-			}
-		}
 		// Parse number(--number, -n) parameter
 		switch iNum {
 		case 0:
 			// fix up commit
-			fmt.Println("*** git commit --fixup ***")
-			out, err := exec.Command("git", "commit", "--fixup=HEAD").Output()
+			log.Info("*** git commit --fixup ***")
+			out, err := exec.Command("git", "commit", "--fixup=HEAD", "--quiet").Output()
 
 			if err != nil {
-				fmt.Println(string(out))
+				log.Error(string(out))
 				os.Exit(1)
 			}
 
-			fmt.Println(string(out))
+			log.Info(string(out))
 			// rebase
 			os.Setenv("GIT_EDITOR", ":")
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2", "--quiet")
 			// Transfer the command I/O to Standard I/O
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
-			fmt.Println("*** rebase with autosquash ***")
+			log.Info("*** rebase with autosquash ***")
 			if err = cmd.Run(); err != nil {
-				fmt.Println(err)
+				log.Error(err)
 			}
 
 		default:
@@ -202,8 +219,8 @@ func main() {
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
-				if err = cmd.Run(); err != nil {
-					fmt.Println(err)
+				if err := cmd.Run(); err != nil {
+					log.Error(err)
 					os.Exit(1)
 				}
 			}
@@ -211,17 +228,18 @@ func main() {
 
 			/* git rebase with autosquash option */
 			speciedHead := fmt.Sprintf("HEAD~%d", iNum+1)
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead)
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
+
 			// Transfer the command I/O to Standard I/O
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
-			if err = cmd.Run(); err != nil {
-				fmt.Println("*** rebase failed ***")
-				fmt.Println(err)
+			if err := cmd.Run(); err != nil {
+				log.Error("*** rebase failed ***")
+				log.Error(err)
 			}
-			fmt.Println("*** rebase completed ***")
+			log.Info("*** rebase completed ***")
 		}
 
 		return nil
