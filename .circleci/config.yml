@@ -5,11 +5,9 @@ jobs:
       - GOPATH: /home/circleci/go
     docker:
       - image: circleci/golang:1.9
+    working_directory: /home/circleci/go/src/kamontia/qs
     steps:
       - checkout
-      - run: go get github.com/kamontia/git-fixup
-      - run:
-          command: |
-            cd ~/project
-            go build
+      - run: dep ensure
+      - run: go build
       - run: ./script/test.sh
