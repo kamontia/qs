@@ -41,12 +41,13 @@ You must rebase manually.
 To install, use `go get`:
 
 ```bash
-$ go get -d github.com/kamontia/git-fixup
+$ go get -d github.com/kamontia/qs
+$ dep ensure
 ```
 
 ## Contribution
 
-1. Fork ([https://github.com/kamontia/git-fixup/fork](https://github.com/kamontia/git-fixup/fork))
+1. Fork ([https://github.com/kamontia/qs/fork](https://github.com/kamontia/qs/fork))
 1. Create a feature branch
 1. Commit your changes
 1. Rebase your local changes against the master branch
