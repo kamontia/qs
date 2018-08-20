@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"github.com/codegangsta/cli"
+	log "github.com/sirupsen/logrus"
 	"os"
 	"os/exec"
 	"regexp"
 	"strconv"
-
-	"github.com/codegangsta/cli"
 )
 
 func main() {
@@ -29,35 +28,48 @@ func main() {
 			Name:  "force, f",
 			Usage: "Force update",
 		},
+		cli.BoolFlag{
+			Name:  "debug, d",
+			Usage: "Show verbose logging",
+		},
 	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
+		// logrus init
+		var debug bool = c.Bool("debug")
+		log.SetOutput(os.Stdout)
+		if debug {
+			log.SetLevel(log.InfoLevel)
+		} else {
+			log.SetLevel(log.WarnLevel)
+		}
+
 		// Intaractive
 		var force bool = c.Bool("force")
 		var num string = strconv.Itoa(c.Int("number"))
 		var stdin string
 
 		if force {
-			fmt.Println("*** force update ***")
+			log.Info("*** force update ***")
 		} else {
 			fmt.Println("*** Do you fixup the following commits?(y/n) ***")
 			out, err := exec.Command("git", "log", "--oneline", "-n", num).Output()
 			if err != nil {
-				fmt.Print(out)
+				log.Error(out)
 				os.Exit(1)
 			}
 			for {
 				fmt.Scan(&stdin)
 				switch stdin {
 				case "y":
-					fmt.Println("*** Fixup! ***")
+					log.Info("*** Fixup! ***")
 				case "n":
-					fmt.Println("*** Abort! ***")
+					log.Info("*** Abort! ***")
 					os.Exit(1)
 				default:
-					fmt.Println("*** You can input y or n ***")
+					log.Info("*** You can input y or n ***")
 					continue
 				}
 				break
@@ -68,25 +80,25 @@ func main() {
 		switch number := c.Int("number"); number {
 		case 0:
 			// fix up commit
-			fmt.Println("*** git commit --fixup ***")
-			out, err := exec.Command("git", "commit", "--fixup=HEAD").Output()
+			log.Info("*** git commit --fixup ***")
+			out, err := exec.Command("git", "commit", "--fixup=HEAD", "--quiet").Output()
 
 			if err != nil {
-				fmt.Println(string(out))
+				log.Error(string(out))
 				os.Exit(1)
 			}
 
-			fmt.Println(string(out))
+			log.Info(string(out))
 			// rebase
 			os.Setenv("GIT_EDITOR", ":")
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2")
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2", "--quiet")
 			// Transfer the command I/O to Standard I/O
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
-			fmt.Println("*** rebase with autosquash ***")
+			log.Info("*** rebase with autosquash ***")
 			if err = cmd.Run(); err != nil {
-				fmt.Println(err)
+				log.Error(err)
 			}
 
 		default:
@@ -94,10 +106,10 @@ func main() {
 			var commitMsg []string
 			var commitNewMsg []string
 			/* Get commit hash */
-			out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
+			out, err := exec.Command("git", "log", "--oneline", "--format=%h", "--quiet").Output()
 			if err != nil {
-				fmt.Print(string(out))
-				fmt.Print(err)
+				log.Error(string(out))
+				log.Error(err)
 				os.Exit(1)
 			}
 
@@ -107,10 +119,10 @@ func main() {
 			/* (END)Get commit hash */
 
 			/* Get commit message */
-			out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+			out, err = exec.Command("git", "log", "--oneline", "--format=%s", "--quiet").Output()
 			if err != nil {
-				fmt.Print(string(out))
-				fmt.Print(err)
+				log.Error(string(out))
+				log.Error(err)
 				os.Exit(1)
 			}
 			for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
@@ -123,9 +135,9 @@ func main() {
 			for i := len(commitMsg) - 1; i >= 0; i-- {
 				/* (WIP) Switch output corresponded to do squash */
 				if c.Int("number") > i {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[36msquash\x1b[0m %s %s\n", i, commitHashList[i], commitNewMsg[number])
+					log.Info(strconv.Itoa(i) + " \x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m" + commitHashList[i] + " " + commitNewMsg[number])
 				} else {
-					fmt.Printf("[%2d] \x1b[35mpickup\x1b[0m -> \x1b[35mpickup\x1b[0m %s %s\n", i, commitHashList[i], commitMsg[i])
+					log.Info(strconv.Itoa(i) + " \x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m" + commitHashList[i] + " " + commitMsg[i])
 				}
 			}
 			/* (END)Display commit hash and message */
@@ -134,39 +146,39 @@ func main() {
 			/**
 			git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
 			*/
-			log.Println("Logged display")
+			log.Info("Logged display")
 			/* Suppress vim editor launching */
 			os.Setenv("GIT_EDITOR", ":")
 			/* (END) Suppress vim editor launching */
 			for i := number; i >= 0; i-- {
 				speciedHead := fmt.Sprintf("HEAD~%d", i)
-				speciedExec := fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[number])
-				cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
+				speciedExec := fmt.Sprintf("--exec=git commit --quiet --amend -m\"%s\"", commitNewMsg[number])
+				cmd := exec.Command("git", "rebase", speciedHead, speciedExec, "--quiet")
 
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
 				cmd.Stderr = os.Stderr
 				if err = cmd.Run(); err != nil {
-					fmt.Println(err)
+					log.Error(err)
 					os.Exit(1)
 				}
 			}
 			/* (END) git rebase */
 
-			log.Println("Logged display")
+			log.Info("Logged display")
 			/* git rebase with autosquash option */
 			speciedHead := fmt.Sprintf("HEAD~%d", number+1)
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead)
+			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
 			// Transfer the command I/O to Standard I/O
 			cmd.Stdin = os.Stdin
 			cmd.Stdout = os.Stdout
 			cmd.Stderr = os.Stderr
 
 			if err = cmd.Run(); err != nil {
-				fmt.Println("*** rebase failed ***")
-				fmt.Println(err)
+				log.Error("*** rebase failed ***")
+				log.Error(err)
 			}
-			fmt.Println("*** rebase completed ***")
+			log.Info("*** rebase completed ***")
 		}
 
 		return nil
