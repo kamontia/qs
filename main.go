@@ -119,7 +119,7 @@ func main() {
 	app.Usage = ""
 
 	app.Flags = []cli.Flag{
-		cli.IntFlag{
+		cli.StringFlag{
 			Name:  "number, n",
 			Usage: "Specify suqash number",
 		},
@@ -139,37 +139,25 @@ func main() {
 		/* Pick up squash range */
 		/* TODO: Check error strictly */
 		var error error
-		for _, v := range os.Args {
-			if strings.Contains(v, "..") {
-				rangeArray = strings.Split(v, "..")
-				iNum, error = strconv.Atoi(rangeArray[0])
-				if error != nil {
-					log.Error(error)
-					os.Exit(1)
-				}
-				iBreakNumber, error = strconv.Atoi(rangeArray[1])
-				if error != nil {
-					log.Error(error)
-					os.Exit(1)
-				}
-				if iNum < iBreakNumber {
-					tmp := iNum
-					iNum = iBreakNumber
-					iBreakNumber = tmp
-				} else {
-					tmp := iBreakNumber
-					iBreakNumber = iNum
-					iNum = tmp
-				}
-				break
-			}
-		}
 
-		if len(rangeArray) != 2 {
-			log.Error("ERROR: argument erorr")
+		rangeArray := strings.Split(c.String("number"), "..")
+		iNum, error = strconv.Atoi(rangeArray[0])
+		if error != nil {
+			log.Error(error)
 			os.Exit(1)
 		}
+		iBreakNumber, error = strconv.Atoi(rangeArray[1])
+		if error != nil {
+			log.Error(error)
+			os.Exit(1)
+		}
+		if iNum < iBreakNumber {
+			tmp := iNum
+			iNum = iBreakNumber
+			iBreakNumber = tmp
+		}
 		/* (END) Pick up squash range */
+
 		logrus_init(c.Bool("debug"))
 		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
