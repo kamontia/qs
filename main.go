@@ -70,7 +70,7 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		commitMsg = append(commitMsg, v)
-		commitNewMsg = append(commitNewMsg, fmt.Sprintf("squash! %s", v))
+		commitNewMsg = append(commitNewMsg, fmt.Sprintf("fixup! %s", v))
 	}
 	/* (END)Get commit message */
 	if force {
