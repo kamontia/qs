@@ -10,7 +10,7 @@ DIRNO=1
 ExecComamnd=$(basename $(pwd))
 ROOTDIR=$(pwd)
 prepare_env () {
-  TESTDIR=test-${ExecComamnd}-${DIRNO}
+  TESTDIR=test-$$-${ExecComamnd}-${DIRNO}
   mkdir -p $TESTDIR
   go build
   cp ./${ExecComamnd} $TESTDIR
