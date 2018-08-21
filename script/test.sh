@@ -27,7 +27,7 @@ git_init () {
 git_pre_commit () {
   max=10
   for ((i=0; i <= $max; i++)); do
-      touch file-${i}
+      echo file-${i} >> file-${i}
       git add file-${i}
       git commit -m "Add file-${i}"
   done
@@ -60,6 +60,29 @@ test_check () {
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" >> ./../test-$$-result
   fi
 }
+
+test_PR38 () { # PR38: Feature error handling by git rebase --abort
+   prepare_env
+   git_init
+   git_pre_commit
+   git revert HEAD~2
+   echo file-11 >> file-11
+   git add file-11
+   git commit -m "Add file-11"
+
+   set +e
+   REFLOG_HASH_1=$(git log --oneline --format=%h|head -n1)
+   ./${ExecComamnd}  -n 2..5 -f -d
+   REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
+   set -e
+   if [ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]; then
+     echo "[passed] RUN ./${ExecComamnd}  -n 2..5 -f -d" >> ./../test-$$-result
+   else
+     echo "[failed] RUN ./${ExecComamnd}  -n 2..5 -f -d" >> ./../test-$$-result
+   fi 
+   teardown
+}
+
 
 test_run () {
   prepare_env
@@ -96,6 +119,10 @@ else
   test_run s 6
   # test for `./qs -n 0..5. -f -d` and expected failed`
   test_run 0..5. 6
+  set -e
+  # test for `.qs -n 5 -f -d` and error handling by git rebase --abort
+  set +e
+  test_PR38
   set -e
   echo "*** test result ***"
   cat ./test-$$-result
