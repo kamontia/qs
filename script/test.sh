@@ -66,7 +66,7 @@ test_run () {
   git_init
   git_pre_commit
   echo "*** START $1 ***"
-  test_check $1 $2
+  test_check $1 $2 $3 
   echo "*** FINISH $1 ***"
   teardown
 }
@@ -81,8 +81,10 @@ if [ "prepare" == "$PREPARE" ]; then
   echo "*** create $TESTDIR ***"
 else
   # test for `./qs -n 5 -f -d` and expected result value is 6
-  test_run 5 6
+  test_run 5 6 -d
   # test for `./qs -n 0..5 -f -d` and expected result value is 6
+  test_run 0..5 6 -d
+  # test for `./qs -n 0..5 -f ` and suppress logging
   test_run 0..5 6
   # test for `./qs -n 5 -f -d` and validate ok`
   test_run 5 6
