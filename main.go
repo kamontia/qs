@@ -140,21 +140,31 @@ func main() {
 		/* TODO: Check error strictly */
 		var error error
 
-		rangeArray := strings.Split(c.String("number"), "..")
-		iNum, error = strconv.Atoi(rangeArray[0])
-		if error != nil {
-			log.Error(error)
-			os.Exit(1)
-		}
-		iBreakNumber, error = strconv.Atoi(rangeArray[1])
-		if error != nil {
-			log.Error(error)
-			os.Exit(1)
-		}
-		if iNum < iBreakNumber {
-			tmp := iNum
-			iNum = iBreakNumber
-			iBreakNumber = tmp
+		if strings.Contains(c.String("number"), "..") {
+			/* Specify the range you aggregate */
+			rangeArray := strings.Split(c.String("number"), "..")
+			iNum, error = strconv.Atoi(rangeArray[0])
+			if error != nil {
+				log.Error(error)
+				os.Exit(1)
+			}
+			iBreakNumber, error = strconv.Atoi(rangeArray[1])
+			if error != nil {
+				log.Error(error)
+				os.Exit(1)
+			}
+			if iNum < iBreakNumber {
+				tmp := iNum
+				iNum = iBreakNumber
+				iBreakNumber = tmp
+			}
+		} else {
+			/* Specify the one parameter you aggregate */
+			iBreakNumber = 0
+			iNum, error = strconv.Atoi(c.String("number"))
+			if error != nil {
+				log.Error(error)
+			}
 		}
 		/* (END) Pick up squash range */
 
@@ -162,76 +172,50 @@ func main() {
 		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
 		// Parse number(--number, -n) parameter
-		switch iNum {
-		case 0:
-			// fix up commit
-			log.Info("*** git commit --fixup ***")
-			out, err := exec.Command("git", "commit", "--fixup=HEAD", "--quiet").Output()
 
-			if err != nil {
-				log.Error(string(out))
+		/* (WIP) git rebase */
+		/**
+		git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
+		*/
+		/* Suppress vim editor launching */
+		os.Setenv("GIT_EDITOR", ":")
+		/* (END) Suppress vim editor launching */
+		for i := iNum; i >= 0; i-- {
+			speciedHead := fmt.Sprintf("HEAD~%d", i+1)
+			var speciedExec string
+			if iNum > i && i >= iBreakNumber {
+				speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[iNum])
+			} else {
+				speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+			}
+
+			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
+			log.Printf("git rebaes HEAD~%d %s\n", i, speciedExec)
+
+			cmd.Stdin = os.Stdin
+			cmd.Stdout = os.Stdout
+			cmd.Stderr = os.Stderr
+			if err := cmd.Run(); err != nil {
+				log.Error(err)
 				os.Exit(1)
 			}
-
-			log.Info(string(out))
-			// rebase
-			os.Setenv("GIT_EDITOR", ":")
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", "HEAD~2", "--quiet")
-			// Transfer the command I/O to Standard I/O
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-			log.Info("*** rebase with autosquash ***")
-			if err = cmd.Run(); err != nil {
-				log.Error(err)
-			}
-
-		default:
-
-			/* (WIP) git rebase */
-			/**
-			git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
-			*/
-			/* Suppress vim editor launching */
-			os.Setenv("GIT_EDITOR", ":")
-			/* (END) Suppress vim editor launching */
-			for i := iNum; i >= 0; i-- {
-				speciedHead := fmt.Sprintf("HEAD~%d", i+1)
-				var speciedExec string
-				if iNum > i && i >= iBreakNumber {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[iNum])
-				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
-				}
-
-				cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
-				log.Printf("git rebaes HEAD~%d %s\n", i, speciedExec)
-
-				cmd.Stdin = os.Stdin
-				cmd.Stdout = os.Stdout
-				cmd.Stderr = os.Stderr
-				if err := cmd.Run(); err != nil {
-					log.Error(err)
-					os.Exit(1)
-				}
-			}
-			/* (END) git rebase */
-
-			/* git rebase with autosquash option */
-			speciedHead := fmt.Sprintf("HEAD~%d", iNum+1)
-			cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
-
-			// Transfer the command I/O to Standard I/O
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
-
-			if err := cmd.Run(); err != nil {
-				log.Error("*** rebase failed ***")
-				log.Error(err)
-			}
-			log.Info("*** rebase completed ***")
 		}
+		/* (END) git rebase */
+
+		/* git rebase with autosquash option */
+		speciedHead := fmt.Sprintf("HEAD~%d", iNum+1)
+		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
+
+		// Transfer the command I/O to Standard I/O
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		if err := cmd.Run(); err != nil {
+			log.Error("*** rebase failed ***")
+			log.Error(err)
+		}
+		log.Info("*** rebase completed ***")
 
 		return nil
 	}
