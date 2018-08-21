@@ -31,53 +31,44 @@ prepare_git () {
   done
 }
 
-testcase_end () {
+teardown () {
   cd ${ROOTDIR}
   DIRNO=$(expr $DIRNO + 1)
+}
+
+test_check () {
+  NUM=$1
+  EXPECTED_ADDED_FILE_NUM=$2
+  git log --oneline
+  ./$ExecComamnd -n $NUM -f -d
+  git log --oneline
+  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
+
+  if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
+    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $EXPECTED_ADDED_FILE_NUM" >> ./../test-$$-result
+  else
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" >> ./../test-$$-result
+  fi
 }
 
 test_run () {
   prepare_env
   prepare_git
   echo "*** START $1 ***"
-  $1 "$1"
+  test_check $1 $2
   echo "*** FINISH $1 ***"
-  testcase_end
+  teardown
 }
 
-testcase1 () {
-  NUM=5
-  EXPECTED_ADDED_FILE_NUM=$(( $NUM + 1 ))
-
-  git log --oneline
-  ./${ExecComamnd}  -n 0..5 -d -f
-  git log --oneline
-  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
-
-  if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
-    echo "*** test passed ***"
-  else
-    echo "*** test failed ***"
-  fi
-}
-
-testcase2 () {
-  NUM=5
-  EXPECTED_ADDED_FILE_NUM=$(( $NUM + 1 ))
-
-  git log --oneline
-  ./${ExecComamnd}  -n 5 -d -f
-  git log --oneline
-  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
-
-  if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
-    echo "*** test passed ***"
-  else
-    echo "*** test failed ***"
-  fi
-}
-
+:
+: main
+:
 if [ "prepare" != "$PREPARE" ]; then
-  test_run "testcase1"
-  test_run "testcase2"
+  # test for `./qs -n 5 -f -d` and expected result value is 6
+  test_run 5 6
+  # test for `./qs -n 0..5 -f -d` and expected result value is 6
+  test_run 0..5 6
+  echo "*** test result ***"
+  cat ./test-$$-result
 fi
+
