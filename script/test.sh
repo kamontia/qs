@@ -2,13 +2,15 @@
 set -ex
 set -o pipefail
 
-ExecComamnd=$(basename $(pwd))
-TESTDIR=test-${ExecComamnd}-$$
+
 # if you only do prepare
 # ./test.sh prepare
 PREPARE=$1
-
+DIRNO=1
+ExecComamnd=$(basename $(pwd))
+ROOTDIR=$(pwd)
 prepare_env () {
+  TESTDIR=test-${ExecComamnd}-${DIRNO}
   mkdir -p $TESTDIR
   go build
   cp ./${ExecComamnd} $TESTDIR
@@ -29,7 +31,37 @@ prepare_git () {
   done
 }
 
-test () {
+testcase_end () {
+  cd ${ROOTDIR}
+  DIRNO=$(expr $DIRNO + 1)
+}
+
+test_run () {
+  prepare_env
+  prepare_git
+  echo "*** START $1 ***"
+  $1 "$1"
+  echo "*** FINISH $1 ***"
+  testcase_end
+}
+
+testcase1 () {
+  NUM=5
+  EXPECTED_ADDED_FILE_NUM=$(( $NUM + 1 ))
+
+  git log --oneline
+  ./${ExecComamnd}  -n 0..5 -d -f
+  git log --oneline
+  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
+
+  if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
+    echo "*** test passed ***"
+  else
+    echo "*** test failed ***"
+  fi
+}
+
+testcase2 () {
   NUM=5
   EXPECTED_ADDED_FILE_NUM=$(( $NUM + 1 ))
 
@@ -40,15 +72,12 @@ test () {
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
     echo "*** test passed ***"
-    exit 0
   else
     echo "*** test failed ***"
-    exit 1
   fi
 }
 
-prepare_env
-prepare_git
 if [ "prepare" != "$PREPARE" ]; then
-  test
+  test_run "testcase1"
+  test_run "testcase2"
 fi
