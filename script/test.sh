@@ -42,7 +42,15 @@ test_check () {
   NUM=$1
   EXPECTED_ADDED_FILE_NUM=$2
   git log --oneline
+
   ./$ExecComamnd -n $NUM -f -d
+  ret=$?
+
+  if [ "$ret" != "0" ]; then
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    return 1
+  fi
+
   git log --oneline
   ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
 
@@ -76,6 +84,17 @@ else
   test_run 5 6
   # test for `./qs -n 0..5 -f -d` and expected result value is 6
   test_run 0..5 6
+  # test for `./qs -n 5 -f -d` and validate ok`
+  test_run 5 6
+  # test for `./qs -n 0..5 -f -d` and validate ok`
+  test_run 0..5 6
+  # to test for failure
+  set +e
+  # test for `./qs -n s -f -d` and expected failed`
+  test_run s 6
+  # test for `./qs -n 0..5. -f -d` and expected failed`
+  test_run 0..5. 6
+  set -e
   echo "*** test result ***"
   cat ./test-$$-result
 fi
