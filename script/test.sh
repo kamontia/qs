@@ -41,8 +41,9 @@ teardown () {
 test_check () {
   NUM=$1
   EXPECTED_ADDED_FILE_NUM=$2
-  OPTIONS=$3
-  ./$ExecComamnd -n $NUM $OPTIONS -f
+  git log --oneline
+  ./$ExecComamnd -n $NUM -f -d
+  git log --oneline
   ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
@@ -50,27 +51,6 @@ test_check () {
   else
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" >> ./../test-$$-result
   fi
-}
-
-test_check_yesClick () {
-  prepare_env
-  git_init
-  git_pre_commit
-  echo "*** START $1 ***"
-
-  NUM=$1
-  EXPECTED_ADDED_FILE_NUM=$2
-  OPTIONS=$3
-  yes | ./$ExecComamnd -n $NUM $OPTIONS
-  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
-
-  if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
-    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $EXPECTED_ADDED_FILE_NUM" >> ./../test-$$-result
-  else
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" >> ./../test-$$-result
-  fi
-  echo "*** FINISH $1 ***"
-  teardown
 }
 
 test_run () {
@@ -95,9 +75,7 @@ else
   # test for `./qs -n 5 -f -d` and expected result value is 6
   test_run 5 6
   # test for `./qs -n 0..5 -f -d` and expected result value is 6
-  test_run 0..5 6 -d
-  # test for `./qs -n 0..5 -f ` and suppress logging
-  test_check_yesClick 0..5 6 -d
+  test_run 0..5 6
   echo "*** test result ***"
   cat ./test-$$-result
 fi
