@@ -35,10 +35,10 @@ func logrus_init(d bool) {
 func validate(n string) {
 	r := regexp.MustCompile(`^[0-9]*$|^[0-9]*..[0-9]*$`)
 	isNum := r.MatchString(n)
-  if !isNum {
-    log.Error("*** invalid number flag ***")
-    os.Exit(1)
-  }
+	if !isNum {
+		log.Error("*** invalid number flag ***")
+		os.Exit(1)
+	}
 }
 
 func check_current_commit(f bool, iNum int, iBreakNumber int) {
