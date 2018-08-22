@@ -2,13 +2,13 @@
 set -ex
 set -o pipefail
 
-
 # if you only do prepare
 # ./test.sh prepare
 PREPARE=$1
 DIRNO=1
 ExecComamnd=$(basename $(pwd))
 ROOTDIR=$(pwd)
+
 prepare_env () {
   TESTDIR=test-$$-${ExecComamnd}-${DIRNO}
   mkdir -p $TESTDIR
@@ -17,12 +17,14 @@ prepare_env () {
   cd $TESTDIR
 }
 
-prepare_git () {
+git_init () {
   git init
   git config --local user.email "git-fixup@example.com"
   git config --local user.name "git fixup"
   git commit --allow-empty -m "Initial commit"
+}
 
+git_pre_commit () {
   max=10
   for ((i=0; i <= $max; i++)); do
       touch file-${i}
@@ -53,7 +55,8 @@ test_check () {
 
 test_run () {
   prepare_env
-  prepare_git
+  git_init
+  git_pre_commit
   echo "*** START $1 ***"
   test_check $1 $2
   echo "*** FINISH $1 ***"
@@ -63,7 +66,12 @@ test_run () {
 :
 : main
 :
-if [ "prepare" != "$PREPARE" ]; then
+if [ "prepare" == "$PREPARE" ]; then
+  prepare_env
+  git_init
+  git_pre_commit
+  echo "*** create $TESTDIR ***"
+else
   # test for `./qs -n 5 -f -d` and expected result value is 6
   test_run 5 6
   # test for `./qs -n 0..5 -f -d` and expected result value is 6
