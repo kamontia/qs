@@ -33,7 +33,7 @@ func logrus_init(d bool) {
 }
 
 func validate(n string) {
-	r := regexp.MustCompile(`^[0-9]*$|^[0-9]*..[0-9]*$`)
+	r := regexp.MustCompile(`^[0-9]+$|^[0-9]+..[0-9]+$`)
 	isNum := r.MatchString(n)
 	if !isNum {
 		log.Error("*** invalid number flag ***")
