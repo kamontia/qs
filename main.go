@@ -32,6 +32,15 @@ func logrus_init(d bool) {
 	}
 }
 
+func validate(n string) {
+	r := regexp.MustCompile(`^[0-9]+$|^[0-9]+..[0-9]+$`)
+	isNum := r.MatchString(n)
+	if !isNum {
+		log.Error("*** invalid number flag ***")
+		os.Exit(1)
+	}
+}
+
 func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	var force bool = f
 	var sNum = strconv.Itoa(iNum)
@@ -136,6 +145,8 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
+		validate(c.String("number"))
+
 		/* Pick up squash range */
 		/* TODO: Check error strictly */
 		var error error
@@ -167,7 +178,6 @@ func main() {
 			}
 		}
 		/* (END) Pick up squash range */
-
 		logrus_init(c.Bool("debug"))
 		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
