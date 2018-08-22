@@ -77,12 +77,12 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 		log.Info("*** force update ***")
 	} else {
 		/* Display commit hash and message. The [pickup|..] strings is colored */
-		for i := len(commitMsg) - 1; i >= 0; i-- {
+		for i := len(commitMsg) - 2; i >= 0; i-- {
 			/* Switch output corresponded to do squash */
 			if iNum > i && i >= iBreakNumber {
-				log.Info("[" + strconv.Itoa(i) + "]" + " \x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m" + commitHashList[i] + " " + commitNewMsg[iNum])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
 			} else {
-				log.Info("[" + strconv.Itoa(i) + "]" + " \x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m" + commitHashList[i] + " " + commitMsg[i])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
 			}
 		}
 		/* (END) Display commit hash and message */
