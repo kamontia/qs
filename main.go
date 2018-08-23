@@ -202,9 +202,15 @@ func main() {
 			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
 			log.Printf("git rebaes HEAD~%d %s\n", i, speciedExec)
 
-			cmd.Stdin = os.Stdin
-			cmd.Stdout = os.Stdout
-			cmd.Stderr = os.Stderr
+			if c.Bool("debug") {
+				cmd.Stdin = os.Stdin
+				cmd.Stdout = os.Stdout
+				cmd.Stderr = os.Stderr
+			} else {
+				cmd.Stdin = nil
+				cmd.Stdout = nil
+				cmd.Stderr = nil
+			}
 			if err := cmd.Run(); err != nil {
 				log.Error(err)
 				os.Exit(1)
