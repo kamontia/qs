@@ -20,7 +20,9 @@ var rangeArray []string
 var commitHashList []string
 var commitMsg []string
 var commitNewMsg []string
+var commitSpecifiedMsg []string
 var reflogHashList []string
+var specifiedMsg string
 
 func logrus_init(d bool) {
 	var debug bool = d
@@ -80,6 +82,7 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		commitMsg = append(commitMsg, v)
 		commitNewMsg = append(commitNewMsg, fmt.Sprintf("fixup! %s", v))
+		commitSpecifiedMsg = append(commitSpecifiedMsg, fmt.Sprintf("fixup! %s", specifiedMsg))
 	}
 	/* (END)Get commit message */
 	if force {
@@ -140,12 +143,17 @@ func main() {
 			Name:  "debug, d",
 			Usage: "Show verbose logging",
 		},
+		cli.StringFlag{
+			Name:  "message, m",
+			Usage: "Commit message",
+		},
 	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
 		validate(c.String("number"))
+		specifiedMsg = c.String("message")
 
 		/* Pick up squash range */
 		/* TODO: Check error strictly */
@@ -193,10 +201,21 @@ func main() {
 		for i := iNum; i >= 0; i-- {
 			speciedHead := fmt.Sprintf("HEAD~%d", i+1)
 			var speciedExec string
-			if iNum > i && i >= iBreakNumber {
-				speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[iNum])
+
+			if specifiedMsg != "" {
+				if iNum == i {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
+				} else if iNum > i && i >= iBreakNumber {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitSpecifiedMsg[iNum])
+				} else {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+				}
 			} else {
-				speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+				if iNum > i && i >= iBreakNumber {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[iNum])
+				} else {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+				}
 			}
 
 			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
