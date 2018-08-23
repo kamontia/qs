@@ -238,7 +238,14 @@ func main() {
 		log.Info("*** rebase completed ***")
 
 		// Update commit
-		cmd = exec.Command("git", "commit", "--amend", "-m", c.String("message"))
+		var message string
+		if c.String("message") != "" {
+			message = c.String("message")
+		} else {
+			message = commitMsg[iBreakNumber]
+		}
+
+		cmd = exec.Command("git", "commit", "--amend", "-m", message)
 		if err := cmd.Run(); err != nil {
 			log.Error("*** update failed ***")
 			log.Error(err)
