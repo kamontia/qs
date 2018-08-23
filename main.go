@@ -140,6 +140,10 @@ func main() {
 			Name:  "debug, d",
 			Usage: "Show verbose logging",
 		},
+		cli.StringFlag{
+			Name:  "message, m",
+			Usage: "Commit message",
+		},
 	}
 	app.Commands = Commands
 	app.CommandNotFound = CommandNotFound
@@ -232,6 +236,14 @@ func main() {
 			log.Error(err)
 		}
 		log.Info("*** rebase completed ***")
+
+		// Update commit
+		cmd = exec.Command("git", "commit", "--amend", "-m", c.String("message"))
+		if err := cmd.Run(); err != nil {
+			log.Error("*** update failed ***")
+			log.Error(err)
+		}
+		log.Info("*** updated commit message ***")
 
 		return nil
 	}
