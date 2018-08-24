@@ -231,7 +231,16 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
+				log.Error("QS reseted this operation. Please git rebase manually")
 				log.Error(err)
+				cmd = exec.Command("git", "rebase", "--abort")
+				if err := cmd.Run(); err != nil {
+					log.Error(err)
+				}
+				cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
+				if err := cmd.Run(); err != nil {
+					log.Error(err)
+				}
 				os.Exit(1)
 			}
 		}
@@ -247,8 +256,16 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			log.Error("*** rebase failed ***")
+			log.Error("QS reseted this operation. Please git rebase manually")
 			log.Error(err)
+			cmd = exec.Command("git", "rebase", "--abort")
+			if err := cmd.Run(); err != nil {
+				log.Error(err)
+			}
+			cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
+			if err := cmd.Run(); err != nil {
+				log.Error(err)
+			}
 		}
 		log.Info("*** rebase completed ***")
 
