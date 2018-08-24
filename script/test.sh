@@ -65,7 +65,7 @@ test_PR38 () { # PR38: Feature error handling by git rebase --abort
    prepare_env
    git_init
    git_pre_commit
-   git revert HEAD~2
+   git revert HEAD~2 --no-edit
    echo file-11 >> file-11
    git add file-11
    git commit -m "Add file-11"
@@ -76,9 +76,9 @@ test_PR38 () { # PR38: Feature error handling by git rebase --abort
    REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
    set -e
    if [ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]; then
-     echo "[passed] RUN ./${ExecComamnd}  -n 2..5 -f -d" >> ./../test-$$-result
+     echo "[passed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
    else
-     echo "[failed] RUN ./${ExecComamnd}  -n 2..5 -f -d" >> ./../test-$$-result
+     echo "[failed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
    fi 
    teardown
 }
