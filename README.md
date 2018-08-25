@@ -36,12 +36,16 @@ Wao!
 ```
 If conflicts occur, qs can NOT squash automatically.  
 You must rebase manually.
+
+## Demo
+![](https://github.com/kamontia/qs/blob/assets/assets/qs-demo.gif)
+
 ## Install
 
 To install, use `go get`:
 
 ```bash
-$ go get -d github.com/kamontia/qs
+$ go get github.com/kamontia/qs
 $ dep ensure
 ```
 
