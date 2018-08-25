@@ -85,12 +85,14 @@ test_PR38 () { # PR38: Feature error handling by git rebase --abort
 
 
 test_run () {
+  NUM=$2
+  EXPECTED=$5
   prepare_env
   git_init
   git_pre_commit
-  echo "*** START $1 ***"
-  test_check $1 $2 $3 
-  echo "*** FINISH $1 ***"
+  echo "*** START $@ ***"
+  test_check $NUM $EXPECTED
+  echo "*** FINISH $@ ***"
   teardown
 }
 
@@ -103,17 +105,8 @@ if [ "prepare" == "$PREPARE" ]; then
   git_pre_commit
   echo "*** create $TESTDIR ***"
 else
-  # test for `./qs -n 5 -f -d` and expected result value is 6
-  test_run 5 6 -d
-  # test for `./qs -n 0..5 -f -d` and expected result value is 6
-  test_run 0..5 6 -d
-  # test for `./qs -n 0..5 -f ` and suppress logging
-  test_run 0..5 6
-  # test for `./qs -n 5 -f -d` and validate ok`
-  test_run 5 6
-  # test for `./qs -n 0..5 -f -d` and validate ok`
-  test_run 0..5 6
-  # test for `.qs -n 5 -f -d` and error handling by git rebase --abort
+  test_run -n 5 -f -d 6
+  test_run -n 0..5 -f -d 6
   set +e
   test_PR38
   set -e
