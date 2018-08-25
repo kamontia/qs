@@ -112,5 +112,6 @@ else
   set -e
   echo "*** test result ***"
   cat ./test-$$-result
+  ! grep 'failed' test-$$-result
 fi
 
