@@ -113,13 +113,6 @@ else
   test_run 5 6
   # test for `./qs -n 0..5 -f -d` and validate ok`
   test_run 0..5 6
-  # to test for failure
-  set +e
-  # test for `./qs -n s -f -d` and expected failed`
-  test_run s 6
-  # test for `./qs -n 0..5. -f -d` and expected failed`
-  test_run 0..5. 6
-  set -e
   # test for `.qs -n 5 -f -d` and error handling by git rebase --abort
   set +e
   test_PR38
