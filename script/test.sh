@@ -39,7 +39,7 @@ teardown () {
 }
 
 test_squashed () {
-  NUM=$1
+  NUM=$2
   if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
     EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[1]} + 1 ))
   elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
@@ -48,6 +48,10 @@ test_squashed () {
     echo "invalid augument ${NUM}"
     exit 1
   fi
+
+  prepare_env
+  git_init
+  git_pre_commit
 
   git log --oneline
 
@@ -67,6 +71,8 @@ test_squashed () {
   else
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   fi
+
+  teardown
 }
 
 test_PR38 () { # PR38: Feature error handling by git rebase --abort
@@ -91,18 +97,6 @@ test_PR38 () { # PR38: Feature error handling by git rebase --abort
    teardown
 }
 
-
-test_run () {
-  NUM=$2
-  prepare_env
-  git_init
-  git_pre_commit
-  echo "*** START $@ ***"
-  test_squashed $NUM
-  echo "*** FINISH $@ ***"
-  teardown
-}
-
 :
 : main
 :
@@ -112,8 +106,8 @@ if [ "prepare" == "$PREPARE" ]; then
   git_pre_commit
   echo "*** create $TESTDIR ***"
 else
-  test_run -n 5 -f -d
-  test_run -n 0..5 -f -d
+  test_squashed -n 5 -f -d
+  test_squashed -n 0..5 -f -d
   set +e
   test_PR38
   set -e
