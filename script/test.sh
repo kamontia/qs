@@ -108,9 +108,7 @@ if [ "prepare" == "$PREPARE" ]; then
 else
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
-  set +e
   test_PR38
-  set -e
   echo "*** test result ***"
   cat ./test-$$-result
   ! grep 'failed' test-$$-result
