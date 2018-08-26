@@ -38,7 +38,7 @@ func validate(n string) {
 	r := regexp.MustCompile(`^[0-9]+$|^[0-9]+..[0-9]+$`)
 	isNum := r.MatchString(n)
 	if !isNum {
-		log.Error("*** invalid number flag ***")
+		log.Error("invalid number flag")
 		os.Exit(1)
 	}
 }
@@ -86,19 +86,19 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 	/* (END)Get commit message */
 	if force {
-		log.Info("*** force update ***")
+		log.Info("force update")
 	} else {
 		/* Display commit hash and message. The [pickup|..] strings is colored */
 		for i := len(commitMsg) - 2; i >= 0; i-- {
 			/* Switch output corresponded to do squash */
 			if iNum > i && i >= iBreakNumber {
-				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
 			} else {
-				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
 			}
 		}
 		/* (END) Display commit hash and message */
-		fmt.Println("*** Do you squash the following commits?(y/n) ***")
+		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 		if err != nil {
 			log.Error(out)
@@ -108,12 +108,12 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 			fmt.Scan(&stdin)
 			switch stdin {
 			case "y":
-				log.Info("*** Fixup! ***")
+				log.Info("Fixup!")
 			case "n":
-				log.Info("*** Abort! ***")
+				log.Info("Abort!")
 				os.Exit(1)
 			default:
-				log.Info("*** You can input y or n ***")
+				log.Info("You can input y or n")
 				continue
 			}
 			break
@@ -267,7 +267,7 @@ func main() {
 				log.Error(err)
 			}
 		}
-		log.Info("*** rebase completed ***")
+		log.Info("rebase completed")
 
 		return nil
 	}
