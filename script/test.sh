@@ -38,9 +38,17 @@ teardown () {
   DIRNO=$(expr $DIRNO + 1)
 }
 
-test_check () {
+test_squashed () {
   NUM=$1
-  EXPECTED_ADDED_FILE_NUM=$2
+  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
+    EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[1]} + 1 ))
+  elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[2]} + 1 ))
+  else
+    echo "invalid augument ${NUM}"
+    exit 1
+  fi
+
   git log --oneline
 
   ./$ExecComamnd -n $NUM -f -d
@@ -55,9 +63,9 @@ test_check () {
   ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
-    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $EXPECTED_ADDED_FILE_NUM" >> ./../test-$$-result
+    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   else
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" >> ./../test-$$-result
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   fi
 }
 
@@ -86,12 +94,11 @@ test_PR38 () { # PR38: Feature error handling by git rebase --abort
 
 test_run () {
   NUM=$2
-  EXPECTED=$5
   prepare_env
   git_init
   git_pre_commit
   echo "*** START $@ ***"
-  test_check $NUM $EXPECTED
+  test_squashed $NUM
   echo "*** FINISH $@ ***"
   teardown
 }
@@ -105,8 +112,8 @@ if [ "prepare" == "$PREPARE" ]; then
   git_pre_commit
   echo "*** create $TESTDIR ***"
 else
-  test_run -n 5 -f -d 6
-  test_run -n 0..5 -f -d 6
+  test_run -n 5 -f -d
+  test_run -n 0..5 -f -d
   set +e
   test_PR38
   set -e
