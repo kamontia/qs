@@ -75,7 +75,8 @@ test_squashed () {
   teardown
 }
 
-test_PR38 () { # PR38: Feature error handling by git rebase --abort
+# https://github.com/kamontia/qs/pull/38
+test_rebase_abort () {
    prepare_env
    git_init
    git_pre_commit
@@ -108,7 +109,7 @@ if [ "prepare" == "$PREPARE" ]; then
 else
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
-  test_PR38
+  test_rebase_abort
   echo "*** test result ***"
   cat ./test-$$-result
   ! grep 'failed' test-$$-result
