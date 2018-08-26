@@ -219,7 +219,7 @@ func main() {
 			}
 
 			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
-			log.Printf("git rebaes HEAD~%d %s\n", i, speciedExec)
+			log.Printf("git rebase HEAD~%d %s\n", i, speciedExec)
 
 			if c.Bool("debug") {
 				cmd.Stdin = os.Stdin
