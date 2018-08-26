@@ -90,6 +90,42 @@ test_rebase_abort () {
    teardown
 }
 
+# https://github.com/kamontia/qs/issues/17
+test_message () {
+  NUM=$2
+  MESSAGE=$6
+  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
+    TARGET=0
+    PRETARGET=1
+  elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    TARGET=${BASH_REMATCH[1]}
+    PRETARGET=$(( ${BASH_REMATCH[1]} + 1 ))
+  else
+    echo "invalid augument ${NUM}"
+    exit 1
+  fi
+
+  setup
+
+  ./$ExecComamnd -n $NUM -f -d -m "$MESSAGE"
+  ret=$?
+
+  if [ "$ret" != "0" ]; then
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    return 1
+  fi
+
+  ACTUAL_MESSAGE=`git log HEAD~$PRETARGET..HEAD~$TARGET --oneline --format=%s`
+
+  if [ "$MESSAGE" == "$ACTUAL_MESSAGE" ]; then
+    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+  else
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+  fi
+
+  teardown
+}
+
 :
 : main
 :
@@ -100,6 +136,9 @@ else
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
   test_rebase_abort
+  test_message -n 5 -f -d -m "test message"
+  test_message -n 3..5 -f -d -m "test message"
+
   echo "*** test result ***"
   cat ./test-$$-result
   ! grep 'failed' test-$$-result
