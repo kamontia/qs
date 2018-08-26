@@ -46,7 +46,6 @@ To install, use `go get`:
 
 ```bash
 $ go get github.com/kamontia/qs
-$ dep ensure
 ```
 
 ## Contribution
