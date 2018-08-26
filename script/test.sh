@@ -2,29 +2,25 @@
 set -ex
 set -o pipefail
 
-# if you only do prepare
-# ./test.sh prepare
-PREPARE=$1
+# if you only do setup
+# ./test.sh setup
+SETUP=$1
 DIRNO=1
 ExecComamnd=$(basename $(pwd))
 ROOTDIR=$(pwd)
 
-prepare_env () {
+setup () {
   TESTDIR=test-$$-${ExecComamnd}-${DIRNO}
   mkdir -p $TESTDIR
   go build
   cp ./${ExecComamnd} $TESTDIR
   cd $TESTDIR
-}
 
-git_init () {
   git init
   git config --local user.email "git-fixup@example.com"
   git config --local user.name "git fixup"
   git commit --allow-empty -m "Initial commit"
-}
 
-git_pre_commit () {
   max=10
   for ((i=0; i <= $max; i++)); do
       echo file-${i} >> file-${i}
@@ -49,9 +45,7 @@ test_squashed () {
     exit 1
   fi
 
-  prepare_env
-  git_init
-  git_pre_commit
+  setup
 
   git log --oneline
 
@@ -77,9 +71,7 @@ test_squashed () {
 
 # https://github.com/kamontia/qs/pull/38
 test_rebase_abort () {
-   prepare_env
-   git_init
-   git_pre_commit
+   setup
    git revert HEAD~2 --no-edit
    echo file-11 >> file-11
    git add file-11
@@ -101,10 +93,8 @@ test_rebase_abort () {
 :
 : main
 :
-if [ "prepare" == "$PREPARE" ]; then
-  prepare_env
-  git_init
-  git_pre_commit
+if [ "$SETUP" == setup ]; then
+  setup
   echo "*** create $TESTDIR ***"
 else
   test_squashed -n 5 -f -d
