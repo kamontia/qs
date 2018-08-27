@@ -126,6 +126,41 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 }
 
+func pick_up_squash_range(num string) {
+	/* Pick up squash range */
+	/* TODO: Check error strictly */
+	var error error
+
+	if strings.Contains(num, "..") {
+		/* Specify the range you aggregate */
+		rangeArray := strings.Split(num, "..")
+		iNum, error = strconv.Atoi(rangeArray[0])
+		if error != nil {
+			log.Error(error)
+			os.Exit(1)
+		}
+		iBreakNumber, error = strconv.Atoi(rangeArray[1])
+		if error != nil {
+			log.Error(error)
+			os.Exit(1)
+		}
+		if iNum < iBreakNumber {
+			tmp := iNum
+			iNum = iBreakNumber
+			iBreakNumber = tmp
+		}
+	} else {
+		/* Specify the one parameter you aggregate */
+		iBreakNumber = 0
+		iNum, error = strconv.Atoi(num)
+		if error != nil {
+			log.Error(error)
+		}
+	}
+	/* (END) Pick up squash range */
+
+}
+
 func main() {
 
 	app := cli.NewApp()
@@ -160,37 +195,7 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		/* Pick up squash range */
-		/* TODO: Check error strictly */
-		var error error
-
-		if strings.Contains(c.String("number"), "..") {
-			/* Specify the range you aggregate */
-			rangeArray := strings.Split(c.String("number"), "..")
-			iNum, error = strconv.Atoi(rangeArray[0])
-			if error != nil {
-				log.Error(error)
-				os.Exit(1)
-			}
-			iBreakNumber, error = strconv.Atoi(rangeArray[1])
-			if error != nil {
-				log.Error(error)
-				os.Exit(1)
-			}
-			if iNum < iBreakNumber {
-				tmp := iNum
-				iNum = iBreakNumber
-				iBreakNumber = tmp
-			}
-		} else {
-			/* Specify the one parameter you aggregate */
-			iBreakNumber = 0
-			iNum, error = strconv.Atoi(c.String("number"))
-			if error != nil {
-				log.Error(error)
-			}
-		}
-		/* (END) Pick up squash range */
+		pick_up_squash_range(c.String("number"))
 		logrus_init(c.Bool("debug"))
 		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
