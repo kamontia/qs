@@ -126,6 +126,39 @@ test_message () {
   teardown
 }
 
+# https://github.com/kamontia/qs/issues/61
+test_ls() {
+  NUM=$2
+  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
+    EXPECTED=$NUM
+  elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    EXPECTED=$(( ${BASH_REMATCH[2]} - ${BASH_REMATCH[1]} ))
+  else
+    echo "invalid augument ${NUM}"
+    exit 1
+  fi
+
+  setup
+
+  RESULT="$(./$ExecComamnd ls -n $NUM)"
+  ret=$?
+
+  if [ "$ret" != "0" ]; then
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    return 1
+  fi
+
+  SQUASHED_COMMITS=`echo "$RESULT" | grep -c "squash"`
+
+  if [ "$SQUASHED_COMMITS" == "$EXPECTED" ]; then
+    echo "[passed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
+  else
+    echo "[failed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
+  fi
+
+  teardown
+}
+
 :
 : main
 :
@@ -138,6 +171,8 @@ else
   test_rebase_abort
   test_message -n 5 -f -d -m "test message"
   test_message -n 3..5 -f -d -m "test message"
+  test_ls -n 5
+  test_ls -n 3..5
 
   echo "*** test result ***"
   cat ./test-$$-result
