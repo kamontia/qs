@@ -121,6 +121,11 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 }
 
+func ls() {
+
+	log.Info("lslslsls")
+}
+
 func main() {
 
 	app := cli.NewApp()
