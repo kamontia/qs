@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/codegangsta/cli"
-	log "github.com/sirupsen/logrus"
 )
 
 var GlobalFlags = []cli.Flag{}
@@ -20,8 +19,7 @@ var Commands = []cli.Command{
 			},
 		},
 		Action: func(c *cli.Context) error {
-			log.Infof("ls -n %d", c.Int("number"))
-			ls()
+			display_commit_hash_and_message()
 			return nil
 		},
 	},

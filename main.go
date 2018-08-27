@@ -43,6 +43,19 @@ func validate(n string) {
 	}
 }
 
+func display_commit_hash_and_message() {
+	/* Display commit hash and message. The [pickup|..] strings is colored */
+	for i := len(commitMsg) - 2; i >= 0; i-- {
+		/* Switch output corresponded to do squash */
+		if iNum > i && i >= iBreakNumber {
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
+		} else {
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+		}
+	}
+	/* (END) Display commit hash and message */
+}
+
 func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	var force bool = f
 	var sNum = strconv.Itoa(iNum)
@@ -88,16 +101,8 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	if force {
 		log.Info("force update")
 	} else {
-		/* Display commit hash and message. The [pickup|..] strings is colored */
-		for i := len(commitMsg) - 2; i >= 0; i-- {
-			/* Switch output corresponded to do squash */
-			if iNum > i && i >= iBreakNumber {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
-			} else {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
-			}
-		}
-		/* (END) Display commit hash and message */
+		display_commit_hash_and_message()
+
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 		if err != nil {
@@ -119,11 +124,6 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 			break
 		}
 	}
-}
-
-func ls() {
-
-	log.Info("lslslsls")
 }
 
 func main() {
