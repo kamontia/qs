@@ -56,11 +56,7 @@ func display_commit_hash_and_message() {
 	/* (END) Display commit hash and message */
 }
 
-func check_current_commit(f bool, iNum int, iBreakNumber int) {
-	var force bool = f
-	var sNum = strconv.Itoa(iNum)
-	log.SetOutput(os.Stdout)
-
+func get_commit_hash() {
 	/* Get commit hash */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
@@ -72,9 +68,17 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 		commitHashList = append(commitHashList, v)
 	}
 	/* (END)Get commit hash */
+}
+
+func check_current_commit(f bool, iNum int, iBreakNumber int) {
+	var force bool = f
+	var sNum = strconv.Itoa(iNum)
+	log.SetOutput(os.Stdout)
+
+	get_commit_hash()
 
 	/* Get reflog hash */
-	out, err = exec.Command("git", "reflog", "--format=%h").Output()
+	out, err := exec.Command("git", "reflog", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
