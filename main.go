@@ -70,6 +70,22 @@ func get_commit_hash() {
 	/* (END)Get commit hash */
 }
 
+func get_commit_message() {
+	/* Get commit message */
+	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		commitMsg = append(commitMsg, v)
+		commitNewMsg = append(commitNewMsg, fmt.Sprintf("fixup! %s", v))
+		commitSpecifiedMsg = append(commitSpecifiedMsg, fmt.Sprintf("fixup! %s", specifiedMsg))
+	}
+	/* (END)Get commit message */
+}
+
 func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	var force bool = f
 	var sNum = strconv.Itoa(iNum)
@@ -89,19 +105,8 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 	/* (END)Get reflog hash */
 
-	/* Get commit message */
-	out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
+	get_commit_message()
 
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		commitMsg = append(commitMsg, v)
-		commitNewMsg = append(commitNewMsg, fmt.Sprintf("fixup! %s", v))
-		commitSpecifiedMsg = append(commitSpecifiedMsg, fmt.Sprintf("fixup! %s", specifiedMsg))
-	}
-	/* (END)Get commit message */
 	if force {
 		log.Info("force update")
 	} else {
