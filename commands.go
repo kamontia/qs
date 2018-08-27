@@ -19,7 +19,13 @@ var Commands = []cli.Command{
 			},
 		},
 		Action: func(c *cli.Context) error {
-			display_commit_hash_and_message()
+			validate(c.String("number"))
+			specifiedMsg = c.String("message")
+
+			pick_up_squash_range(c.String("number"))
+			logrus_init(c.Bool("debug"))
+			check_current_commit(c.Bool("force"), iNum, iBreakNumber)
+			//			display_commit_hash_and_message()
 			return nil
 		},
 	},
