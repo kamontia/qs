@@ -14,7 +14,7 @@ var Commands = []cli.Command{
 		Name:  "ls",
 		Usage: "list commits",
 		Flags: []cli.Flag{
-			cli.IntFlag{
+			cli.StringFlag{
 				Name: "number, n",
 			},
 		},
