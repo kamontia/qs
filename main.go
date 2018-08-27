@@ -48,7 +48,7 @@ func display_commit_hash_and_message() {
 	for i := len(commitMsg) - 2; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
 		if iNum > i && i >= iBreakNumber {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
 		} else {
 			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
 		}
