@@ -157,13 +157,7 @@ test_ls() {
   teardown
 }
 
-:
-: main
-:
-if [[ "$1" == setup ]]; then
-  setup
-  echo "*** create $TESTDIR ***"
-else
+main() {
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
   test_rebase_abort
@@ -175,5 +169,11 @@ else
   echo "*** test result ***"
   cat ./test-"$$"-result
   ! grep 'failed' test-"$$"-result
-fi
+}
 
+if [[ "$1" == setup ]]; then
+  setup
+  echo "*** create $TESTDIR ***"
+else
+  main "$@"
+fi
