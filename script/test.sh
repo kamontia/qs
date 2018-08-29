@@ -25,6 +25,7 @@ setup () {
       git add file-"${i}"
       git commit -m "Add file-${i}"
   done
+  echo "*** create $TESTDIR ***"
 }
 
 teardown () {
@@ -173,7 +174,6 @@ main() {
 
 if [[ "$1" == setup ]]; then
   setup
-  echo "*** create $TESTDIR ***"
 else
   main "$@"
 fi
