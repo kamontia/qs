@@ -45,7 +45,16 @@ func validate(n string) {
 
 func display_commit_hash_and_message() {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
-	for i := len(commitMsg) - 2; i >= 0; i-- {
+
+	/* set limit to display the history */
+	var limit int
+	if iNum+2 > len(commitMsg)-2 {
+		limit = len(commitMsg) - 2
+	} else {
+		limit = iNum + 2
+	}
+
+	for i := limit; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
 		if iNum > i && i >= iBreakNumber {
 			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
