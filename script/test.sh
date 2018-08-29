@@ -58,7 +58,7 @@ test_squashed () {
   fi
 
   git log --oneline
-  ADDED_FILE_NUM=`git diff HEAD^..HEAD --name-only | wc -l | tr -d ' '`
+  ADDED_FILE_NUM=$(git diff HEAD^..HEAD --name-only | wc -l | tr -d ' ')
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
     echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
@@ -115,7 +115,7 @@ test_message () {
     return 1
   fi
 
-  ACTUAL_MESSAGE=`git log HEAD~$PRETARGET..HEAD~$TARGET --oneline --format=%s`
+  ACTUAL_MESSAGE=$(git log HEAD~$PRETARGET..HEAD~$TARGET --oneline --format=%s)
 
   if [[ "$MESSAGE" == "$ACTUAL_MESSAGE" ]]; then
     echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
@@ -148,7 +148,7 @@ test_ls() {
     return 1
   fi
 
-  SQUASHED_COMMITS=`echo "$RESULT" | grep -c "squash"`
+  SQUASHED_COMMITS=$(echo "$RESULT" | grep -c "squash")
 
   if [[ "$SQUASHED_COMMITS" == "$EXPECTED" ]]; then
     echo "[passed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
