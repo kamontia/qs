@@ -52,7 +52,7 @@ test_squashed () {
   ./"$ExecComamnd" -n "$NUM" -f -d
   ret=$?
 
-  if [ "$ret" != "0" ]; then
+  if [[ "$ret" != "0" ]]; then
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
@@ -82,7 +82,7 @@ test_rebase_abort () {
    ./"${ExecComamnd}" -n 2..5 -f -d
    REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
    set -e
-   if [ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]; then
+   if [[ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]]; then
      echo "[passed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
    else
      echo "[failed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
@@ -110,14 +110,14 @@ test_message () {
   ./"$ExecComamnd" -n "$NUM" -f -d -m "$MESSAGE"
   ret="$?"
 
-  if [ "$ret" != "0" ]; then
+  if [[ "$ret" != "0" ]]; then
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
 
   ACTUAL_MESSAGE=`git log HEAD~$PRETARGET..HEAD~$TARGET --oneline --format=%s`
 
-  if [ "$MESSAGE" == "$ACTUAL_MESSAGE" ]; then
+  if [[ "$MESSAGE" == "$ACTUAL_MESSAGE" ]]; then
     echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
   else
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
@@ -143,14 +143,14 @@ test_ls() {
   RESULT="$(./$ExecComamnd ls -n $NUM)"
   ret="$?"
 
-  if [ "$ret" != "0" ]; then
+  if [[ "$ret" != "0" ]]; then
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
 
   SQUASHED_COMMITS=`echo "$RESULT" | grep -c "squash"`
 
-  if [ "$SQUASHED_COMMITS" == "$EXPECTED" ]; then
+  if [[ "$SQUASHED_COMMITS" == "$EXPECTED" ]]; then
     echo "[passed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
   else
     echo "[failed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
@@ -162,7 +162,7 @@ test_ls() {
 :
 : main
 :
-if [ "$SETUP" == setup ]; then
+if [[ "$SETUP" == setup ]]; then
   setup
   echo "*** create $TESTDIR ***"
 else
