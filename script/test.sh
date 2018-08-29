@@ -63,7 +63,7 @@ test_squashed () {
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
     echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   else
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
+    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   fi
 
   teardown
