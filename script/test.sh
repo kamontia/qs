@@ -2,18 +2,19 @@
 set -ex
 set -o pipefail
 
+readonly EXEC_COMMAND=$(basename $(pwd))
+readonly ROOTDIR=$(pwd)
+
 # if you only do setup
 # ./test.sh setup
 SETUP="$1"
 DIRNO=1
-ExecComamnd=$(basename $(pwd))
-ROOTDIR=$(pwd)
 
 setup () {
-  TESTDIR=test-"$$"-"${ExecComamnd}"-"${DIRNO}"
+  TESTDIR=test-"$$"-"${EXEC_COMMAND}"-"${DIRNO}"
   mkdir -p "$TESTDIR"
   go build
-  cp ./"${ExecComamnd}" "$TESTDIR"
+  cp ./"${EXEC_COMMAND}" "$TESTDIR"
   cd "$TESTDIR"
 
   git init
@@ -49,11 +50,11 @@ test_squashed () {
 
   git log --oneline
 
-  ./"$ExecComamnd" -n "$NUM" -f -d
+  ./"$EXEC_COMMAND" -n "$NUM" -f -d
   ret=$?
 
   if [[ "$ret" != "0" ]]; then
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
 
@@ -61,9 +62,9 @@ test_squashed () {
   ADDED_FILE_NUM=$(git diff HEAD^..HEAD --name-only | wc -l | tr -d ' ')
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
-    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
+    echo "[passed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   else
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
   fi
 
   teardown
@@ -79,13 +80,13 @@ test_rebase_abort () {
 
    set +e
    REFLOG_HASH_1=$(git log --oneline --format=%h|head -n1)
-   ./"${ExecComamnd}" -n 2..5 -f -d
+   ./"${EXEC_COMMAND}" -n 2..5 -f -d
    REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
    set -e
    if [[ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]]; then
-     echo "[passed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
+     echo "[passed] RUN ./${EXEC_COMMAND} -n 2..5 -f -d" >> ./../test-$$-result
    else
-     echo "[failed] RUN ./${ExecComamnd} -n 2..5 -f -d" >> ./../test-$$-result
+     echo "[failed] RUN ./${EXEC_COMMAND} -n 2..5 -f -d" >> ./../test-$$-result
    fi 
    teardown
 }
@@ -107,20 +108,20 @@ test_message () {
 
   setup
 
-  ./"$ExecComamnd" -n "$NUM" -f -d -m "$MESSAGE"
+  ./"$EXEC_COMMAND" -n "$NUM" -f -d -m "$MESSAGE"
   ret="$?"
 
   if [[ "$ret" != "0" ]]; then
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
 
   ACTUAL_MESSAGE=$(git log HEAD~$PRETARGET..HEAD~$TARGET --oneline --format=%s)
 
   if [[ "$MESSAGE" == "$ACTUAL_MESSAGE" ]]; then
-    echo "[passed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+    echo "[passed] RUN ./$EXEC_COMMAND -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
   else
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
   fi
 
   teardown
@@ -140,20 +141,20 @@ test_ls() {
 
   setup
 
-  RESULT="$(./$ExecComamnd ls -n $NUM)"
+  RESULT="$(./$EXEC_COMMAND ls -n $NUM)"
   ret="$?"
 
   if [[ "$ret" != "0" ]]; then
-    echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
     return 1
   fi
 
   SQUASHED_COMMITS=$(echo "$RESULT" | grep -c "squash")
 
   if [[ "$SQUASHED_COMMITS" == "$EXPECTED" ]]; then
-    echo "[passed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
+    echo "[passed] RUN ./$EXEC_COMMAND ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
   else
-    echo "[failed] RUN ./$ExecComamnd ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
+    echo "[failed] RUN ./$EXEC_COMMAND ls -n $NUM RESULT $SQUASHED_COMMITS EXPECTED $EXPECTED" >> ./../test-$$-result
   fi
 
   teardown
