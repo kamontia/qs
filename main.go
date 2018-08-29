@@ -24,8 +24,8 @@ var commitSpecifiedMsg []string
 var reflogHashList []string
 var specifiedMsg string
 
-func logrus_init(d bool) {
-	var debug bool = d
+func logrusInit(d bool) {
+	var debug = d
 	log.SetOutput(os.Stdout)
 	if debug {
 		log.SetLevel(log.InfoLevel)
@@ -43,7 +43,7 @@ func validate(n string) {
 	}
 }
 
-func display_commit_hash_and_message() {
+func displayCommitHashAndMessage() {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
 	for i := len(commitMsg) - 2; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
@@ -56,7 +56,7 @@ func display_commit_hash_and_message() {
 	/* (END) Display commit hash and message */
 }
 
-func get_commit_hash() {
+func getCommitHash() {
 	/* Get commit hash */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
@@ -70,7 +70,7 @@ func get_commit_hash() {
 	/* (END)Get commit hash */
 }
 
-func get_commit_message() {
+func getCommitMessage() {
 	/* Get commit message */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
@@ -86,12 +86,12 @@ func get_commit_message() {
 	/* (END)Get commit message */
 }
 
-func check_current_commit(f bool, iNum int, iBreakNumber int) {
-	var force bool = f
+func checkCurrentCommit(f bool, iNum int, iBreakNumber int) {
+	var force = f
 	var sNum = strconv.Itoa(iNum)
 	log.SetOutput(os.Stdout)
 
-	get_commit_hash()
+	getCommitHash()
 
 	/* Get reflog hash */
 	out, err := exec.Command("git", "reflog", "--format=%h").Output()
@@ -105,12 +105,12 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 	/* (END)Get reflog hash */
 
-	get_commit_message()
+	getCommitMessage()
 
 	if force {
 		log.Info("force update")
 	} else {
-		display_commit_hash_and_message()
+		displayCommitHashAndMessage()
 
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
@@ -135,7 +135,7 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 	}
 }
 
-func pick_up_squash_range(num string) {
+func pickUpSquashRange(num string) {
 	/* Pick up squash range */
 	/* TODO: Check error strictly */
 	var error error
@@ -204,9 +204,9 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		pick_up_squash_range(c.String("number"))
-		logrus_init(c.Bool("debug"))
-		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
+		pickUpSquashRange(c.String("number"))
+		logrusInit(c.Bool("debug"))
+		checkCurrentCommit(c.Bool("force"), iNum, iBreakNumber)
 
 		// Parse number(--number, -n) parameter
 
