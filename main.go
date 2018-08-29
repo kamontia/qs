@@ -14,13 +14,13 @@ import (
 
 /* Definisiotn */
 var stdin string
-var iNum int
-var iBreakNumber int
+var beginNumber int
+var endNumber int
 var rangeArray []string
 var commitHashList []string
-var commitMsg []string
-var commitNewMsg []string
-var commitSpecifiedMsg []string
+var commitMsgList []string
+var commitNewMsgList []string
+var commitSpecifiedMsgList []string
 var reflogHashList []string
 var specifiedMsg string
 
@@ -45,12 +45,12 @@ func validate(n string) {
 
 func displayCommitHashAndMessage() {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
-	for i := len(commitMsg) - 2; i >= 0; i-- {
+	for i := len(commitMsgList) - 2; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
-		if iNum > i && i >= iBreakNumber {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+		if beginNumber > i && i >= endNumber {
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
 		} else {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
 		}
 	}
 	/* (END) Display commit hash and message */
@@ -79,16 +79,16 @@ func getCommitMessage() {
 	}
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		commitMsg = append(commitMsg, v)
-		commitNewMsg = append(commitNewMsg, fmt.Sprintf("fixup! %s", v))
-		commitSpecifiedMsg = append(commitSpecifiedMsg, fmt.Sprintf("fixup! %s", specifiedMsg))
+		commitMsgList = append(commitMsgList, v)
+		commitNewMsgList = append(commitNewMsgList, fmt.Sprintf("fixup! %s", v))
+		commitSpecifiedMsgList = append(commitSpecifiedMsgList, fmt.Sprintf("fixup! %s", specifiedMsg))
 	}
 	/* (END)Get commit message */
 }
 
-func checkCurrentCommit(f bool, iNum int, iBreakNumber int) {
+func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	var force = f
-	var sNum = strconv.Itoa(iNum)
+	var sNum = strconv.Itoa(beginNumber)
 	log.SetOutput(os.Stdout)
 
 	getCommitHash()
@@ -135,7 +135,7 @@ func checkCurrentCommit(f bool, iNum int, iBreakNumber int) {
 	}
 }
 
-func pickUpSquashRange(num string) {
+func pickupSquashRange(num string) {
 	/* Pick up squash range */
 	/* TODO: Check error strictly */
 	var error error
@@ -143,25 +143,25 @@ func pickUpSquashRange(num string) {
 	if strings.Contains(num, "..") {
 		/* Specify the range you aggregate */
 		rangeArray := strings.Split(num, "..")
-		iNum, error = strconv.Atoi(rangeArray[0])
+		beginNumber, error = strconv.Atoi(rangeArray[0])
 		if error != nil {
 			log.Error(error)
 			os.Exit(1)
 		}
-		iBreakNumber, error = strconv.Atoi(rangeArray[1])
+		endNumber, error = strconv.Atoi(rangeArray[1])
 		if error != nil {
 			log.Error(error)
 			os.Exit(1)
 		}
-		if iNum < iBreakNumber {
-			tmp := iNum
-			iNum = iBreakNumber
-			iBreakNumber = tmp
+		if beginNumber < endNumber {
+			tmp := beginNumber
+			beginNumber = endNumber
+			endNumber = tmp
 		}
 	} else {
 		/* Specify the one parameter you aggregate */
-		iBreakNumber = 0
-		iNum, error = strconv.Atoi(num)
+		endNumber = 0
+		beginNumber, error = strconv.Atoi(num)
 		if error != nil {
 			log.Error(error)
 		}
@@ -204,9 +204,9 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		pickUpSquashRange(c.String("number"))
+		pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
-		checkCurrentCommit(c.Bool("force"), iNum, iBreakNumber)
+		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
 
 		// Parse number(--number, -n) parameter
 
@@ -217,23 +217,23 @@ func main() {
 		/* Suppress vim editor launching */
 		os.Setenv("GIT_EDITOR", ":")
 		/* (END) Suppress vim editor launching */
-		for i := iNum; i >= 0; i-- {
+		for i := beginNumber; i >= 0; i-- {
 			speciedHead := fmt.Sprintf("HEAD~%d", i+1)
 			var speciedExec string
 
 			if specifiedMsg != "" {
-				if iNum == i {
+				if beginNumber == i {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
-				} else if iNum > i && i >= iBreakNumber {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitSpecifiedMsg[iNum])
+				} else if beginNumber > i && i >= endNumber {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitSpecifiedMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
 				}
 			} else {
-				if iNum > i && i >= iBreakNumber {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsg[iNum])
+				if beginNumber > i && i >= endNumber {
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsg[i])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
 				}
 			}
 
@@ -266,7 +266,7 @@ func main() {
 		/* (END) git rebase */
 
 		/* git rebase with autosquash option */
-		speciedHead := fmt.Sprintf("HEAD~%d", iNum+1)
+		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
 		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
 
 		// Transfer the command I/O to Standard I/O
