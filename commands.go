@@ -22,11 +22,11 @@ var Commands = []cli.Command{
 			validate(c.String("number"))
 			specifiedMsg = c.String("message")
 
-			pick_up_squash_range(c.String("number"))
-			logrus_init(c.Bool("debug"))
-			get_commit_hash()
-			get_commit_message()
-			display_commit_hash_and_message()
+			pickupSquashRange(c.String("number"))
+			logrusInit(c.Bool("debug"))
+			getCommitHash()
+			getCommitMessage()
+			displayCommitHashAndMessage()
 			return nil
 		},
 	},
