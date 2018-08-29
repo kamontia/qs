@@ -5,9 +5,6 @@ set -o pipefail
 readonly EXEC_COMMAND=$(basename $(pwd))
 readonly ROOTDIR=$(pwd)
 
-# if you only do setup
-# ./test.sh setup
-SETUP="$1"
 DIRNO=1
 
 setup () {
@@ -163,7 +160,7 @@ test_ls() {
 :
 : main
 :
-if [[ "$SETUP" == setup ]]; then
+if [[ "$1" == setup ]]; then
   setup
   echo "*** create $TESTDIR ***"
 else
