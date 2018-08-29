@@ -4,17 +4,17 @@ set -o pipefail
 
 # if you only do setup
 # ./test.sh setup
-SETUP=$1
+SETUP="$1"
 DIRNO=1
 ExecComamnd=$(basename $(pwd))
 ROOTDIR=$(pwd)
 
 setup () {
-  TESTDIR=test-$$-${ExecComamnd}-${DIRNO}
-  mkdir -p $TESTDIR
+  TESTDIR=test-"$$"-"${ExecComamnd}"-"${DIRNO}"
+  mkdir -p "$TESTDIR"
   go build
-  cp ./${ExecComamnd} $TESTDIR
-  cd $TESTDIR
+  cp ./"${ExecComamnd}" "$TESTDIR"
+  cd "$TESTDIR"
 
   git init
   git config --local user.email "git-fixup@example.com"
@@ -22,23 +22,23 @@ setup () {
   git commit --allow-empty -m "Initial commit"
 
   max=10
-  for ((i=0; i <= $max; i++)); do
-      echo file-${i} >> file-${i}
-      git add file-${i}
+  for ((i=0; i <= "$max"; i++)); do
+      echo file-"${i}" >> file-"${i}"
+      git add file-"${i}"
       git commit -m "Add file-${i}"
   done
 }
 
 teardown () {
-  cd ${ROOTDIR}
+  cd "${ROOTDIR}"
   DIRNO=$(expr $DIRNO + 1)
 }
 
 test_squashed () {
-  NUM=$2
-  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
+  NUM="$2"
+  if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
     EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[1]} + 1 ))
-  elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+  elif [[ "${NUM}" =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
     EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[2]} + 1 ))
   else
     echo "invalid augument ${NUM}"
@@ -49,7 +49,7 @@ test_squashed () {
 
   git log --oneline
 
-  ./$ExecComamnd -n $NUM -f -d
+  ./"$ExecComamnd" -n "$NUM" -f -d
   ret=$?
 
   if [ "$ret" != "0" ]; then
@@ -79,7 +79,7 @@ test_rebase_abort () {
 
    set +e
    REFLOG_HASH_1=$(git log --oneline --format=%h|head -n1)
-   ./${ExecComamnd}  -n 2..5 -f -d
+   ./"${ExecComamnd}" -n 2..5 -f -d
    REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
    set -e
    if [ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]; then
@@ -92,13 +92,13 @@ test_rebase_abort () {
 
 # https://github.com/kamontia/qs/issues/17
 test_message () {
-  NUM=$2
-  MESSAGE=$6
-  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
+  NUM="$2"
+  MESSAGE="$6"
+  if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
     TARGET=0
     PRETARGET=1
-  elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
-    TARGET=${BASH_REMATCH[1]}
+  elif [[ "${NUM}" =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    TARGET="${BASH_REMATCH[1]}"
     PRETARGET=$(( ${BASH_REMATCH[1]} + 1 ))
   else
     echo "invalid augument ${NUM}"
@@ -107,8 +107,8 @@ test_message () {
 
   setup
 
-  ./$ExecComamnd -n $NUM -f -d -m "$MESSAGE"
-  ret=$?
+  ./"$ExecComamnd" -n "$NUM" -f -d -m "$MESSAGE"
+  ret="$?"
 
   if [ "$ret" != "0" ]; then
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
@@ -128,9 +128,9 @@ test_message () {
 
 # https://github.com/kamontia/qs/issues/61
 test_ls() {
-  NUM=$2
-  if [[ ${NUM} =~ ^([0-9]+)$ ]]; then
-    EXPECTED=$NUM
+  NUM="$2"
+  if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
+    EXPECTED="$NUM"
   elif [[ ${NUM} =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
     EXPECTED=$(( ${BASH_REMATCH[2]} - ${BASH_REMATCH[1]} ))
   else
@@ -141,7 +141,7 @@ test_ls() {
   setup
 
   RESULT="$(./$ExecComamnd ls -n $NUM)"
-  ret=$?
+  ret="$?"
 
   if [ "$ret" != "0" ]; then
     echo "[failed] RUN ./$ExecComamnd -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
@@ -175,7 +175,7 @@ else
   test_ls -n 3..5
 
   echo "*** test result ***"
-  cat ./test-$$-result
-  ! grep 'failed' test-$$-result
+  cat ./test-"$$"-result
+  ! grep 'failed' test-"$$"-result
 fi
 
