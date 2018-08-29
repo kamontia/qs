@@ -43,11 +43,20 @@ func validate(n string) {
 	}
 }
 
-func check_current_commit(f bool, iNum int, iBreakNumber int) {
-	var force bool = f
-	var sNum = strconv.Itoa(iNum)
-	log.SetOutput(os.Stdout)
+func display_commit_hash_and_message() {
+	/* Display commit hash and message. The [pickup|..] strings is colored */
+	for i := len(commitMsg) - 2; i >= 0; i-- {
+		/* Switch output corresponded to do squash */
+		if iNum > i && i >= iBreakNumber {
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+		} else {
+			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
+		}
+	}
+	/* (END) Display commit hash and message */
+}
 
+func get_commit_hash() {
 	/* Get commit hash */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
@@ -59,21 +68,11 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 		commitHashList = append(commitHashList, v)
 	}
 	/* (END)Get commit hash */
+}
 
-	/* Get reflog hash */
-	out, err = exec.Command("git", "reflog", "--format=%h").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		reflogHashList = append(reflogHashList, v)
-	}
-	/* (END)Get reflog hash */
-
+func get_commit_message() {
 	/* Get commit message */
-	out, err = exec.Command("git", "log", "--oneline", "--format=%s").Output()
+	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
@@ -85,19 +84,34 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 		commitSpecifiedMsg = append(commitSpecifiedMsg, fmt.Sprintf("fixup! %s", specifiedMsg))
 	}
 	/* (END)Get commit message */
+}
+
+func check_current_commit(f bool, iNum int, iBreakNumber int) {
+	var force bool = f
+	var sNum = strconv.Itoa(iNum)
+	log.SetOutput(os.Stdout)
+
+	get_commit_hash()
+
+	/* Get reflog hash */
+	out, err := exec.Command("git", "reflog", "--format=%h").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		reflogHashList = append(reflogHashList, v)
+	}
+	/* (END)Get reflog hash */
+
+	get_commit_message()
+
 	if force {
 		log.Info("force update")
 	} else {
-		/* Display commit hash and message. The [pickup|..] strings is colored */
-		for i := len(commitMsg) - 2; i >= 0; i-- {
-			/* Switch output corresponded to do squash */
-			if iNum > i && i >= iBreakNumber {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitNewMsg[iNum])
-			} else {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsg[i])
-			}
-		}
-		/* (END) Display commit hash and message */
+		display_commit_hash_and_message()
+
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 		if err != nil {
@@ -119,6 +133,41 @@ func check_current_commit(f bool, iNum int, iBreakNumber int) {
 			break
 		}
 	}
+}
+
+func pick_up_squash_range(num string) {
+	/* Pick up squash range */
+	/* TODO: Check error strictly */
+	var error error
+
+	if strings.Contains(num, "..") {
+		/* Specify the range you aggregate */
+		rangeArray := strings.Split(num, "..")
+		iNum, error = strconv.Atoi(rangeArray[0])
+		if error != nil {
+			log.Error(error)
+			os.Exit(1)
+		}
+		iBreakNumber, error = strconv.Atoi(rangeArray[1])
+		if error != nil {
+			log.Error(error)
+			os.Exit(1)
+		}
+		if iNum < iBreakNumber {
+			tmp := iNum
+			iNum = iBreakNumber
+			iBreakNumber = tmp
+		}
+	} else {
+		/* Specify the one parameter you aggregate */
+		iBreakNumber = 0
+		iNum, error = strconv.Atoi(num)
+		if error != nil {
+			log.Error(error)
+		}
+	}
+	/* (END) Pick up squash range */
+
 }
 
 func main() {
@@ -155,37 +204,7 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		/* Pick up squash range */
-		/* TODO: Check error strictly */
-		var error error
-
-		if strings.Contains(c.String("number"), "..") {
-			/* Specify the range you aggregate */
-			rangeArray := strings.Split(c.String("number"), "..")
-			iNum, error = strconv.Atoi(rangeArray[0])
-			if error != nil {
-				log.Error(error)
-				os.Exit(1)
-			}
-			iBreakNumber, error = strconv.Atoi(rangeArray[1])
-			if error != nil {
-				log.Error(error)
-				os.Exit(1)
-			}
-			if iNum < iBreakNumber {
-				tmp := iNum
-				iNum = iBreakNumber
-				iBreakNumber = tmp
-			}
-		} else {
-			/* Specify the one parameter you aggregate */
-			iBreakNumber = 0
-			iNum, error = strconv.Atoi(c.String("number"))
-			if error != nil {
-				log.Error(error)
-			}
-		}
-		/* (END) Pick up squash range */
+		pick_up_squash_range(c.String("number"))
 		logrus_init(c.Bool("debug"))
 		check_current_commit(c.Bool("force"), iNum, iBreakNumber)
 
