@@ -1,4 +1,10 @@
 #!/bin/bash
+#
+# test script for qs
+#
+# USAGE: ./test.sh [setup]
+# if you only create testdir, please set "setup" to arg
+
 set -ex
 set -o pipefail
 
