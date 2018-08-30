@@ -100,7 +100,6 @@ func getCommitMessage() {
 func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
-	log.SetOutput(os.Stdout)
 
 	getCommitHash()
 
