@@ -48,10 +48,10 @@ func displayCommitHashAndMessage() {
 
 	/* set limit to display the history */
 	var limit int
-	if iNum+2 > len(commitMsg)-2 {
-		limit = len(commitMsg) - 2
+	if beginNumber+2 > len(commitMsgList)-2 {
+		limit = len(commitMsgList) - 2
 	} else {
-		limit = iNum + 2
+		limit = beginNumber + 2
 	}
 
 	for i := limit; i >= 0; i-- {
