@@ -5,10 +5,12 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
 	"github.com/codegangsta/cli"
+	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +28,8 @@ var specifiedMsg string
 
 func logrusInit(d bool) {
 	var debug = d
-	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	log.SetOutput(colorable.NewColorableStdout())
 	if debug {
 		log.SetLevel(log.InfoLevel)
 	} else {
@@ -57,9 +60,17 @@ func displayCommitHashAndMessage() {
 	for i := limit; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
 		if needsChangeMessage(i) {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			if runtime.GOOS == "windows" {
+				log.Warnf("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
+			} else {
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			}
 		} else {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			if runtime.GOOS == "windows" {
+				log.Warnf("[%2d]\tpickup -> pickup %s %s", i, commitHashList[i], commitMsgList[i])
+			} else {
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			}
 		}
 	}
 	/* (END) Display commit hash and message */
@@ -98,7 +109,6 @@ func getCommitMessage() {
 func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
-	log.SetOutput(os.Stdout)
 
 	getCommitHash()
 
