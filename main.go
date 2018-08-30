@@ -5,6 +5,7 @@ import (
 	"os"
 	"os/exec"
 	"regexp"
+	"runtime"
 	"strconv"
 	"strings"
 
@@ -50,9 +51,17 @@ func displayCommitHashAndMessage() {
 	for i := len(commitMsgList) - 2; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
 		if needsChangeMessage(i) {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			if runtime.GOOS == "windows" {
+				log.Warnf("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
+			} else {
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			}
 		} else {
-			log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			if runtime.GOOS == "windows" {
+				log.Warnf("[%2d]\tpickup -> pickup %s %s", i, commitHashList[i], commitMsgList[i])
+			} else {
+				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+			}
 		}
 	}
 	/* (END) Display commit hash and message */
