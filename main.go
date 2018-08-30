@@ -9,6 +9,7 @@ import (
 	"strings"
 
 	"github.com/codegangsta/cli"
+	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -26,7 +27,8 @@ var specifiedMsg string
 
 func logrusInit(d bool) {
 	var debug = d
-	log.SetOutput(os.Stdout)
+	log.SetFormatter(&log.TextFormatter{ForceColors: true})
+	log.SetOutput(colorable.NewColorableStdout())
 	if debug {
 		log.SetLevel(log.InfoLevel)
 	} else {
