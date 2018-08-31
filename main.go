@@ -18,6 +18,7 @@ import (
 var stdin string
 var beginNumber int
 var endNumber int
+var headMax int
 var rangeArray []string
 var commitHashList []string
 var commitMsgList []string
@@ -76,6 +77,19 @@ func displayCommitHashAndMessage() {
 	/* (END) Display commit hash and message */
 }
 
+func rangeValidation() {
+	if beginNumber > headMax {
+		// displayCommitHashAndMessage()
+		log.Error("QS cannot rebase out of range.")
+		os.Exit(1)
+	} else if beginNumber == headMax {
+		log.Error("The first commit is included in the specified range. If necessary, please rebase with --root option manually.")
+		os.Exit(1)
+	} else {
+		log.Debug("Specified range is OK.")
+	}
+}
+
 func getCommitHash() {
 	/* Get commit hash */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
@@ -87,6 +101,8 @@ func getCommitHash() {
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		commitHashList = append(commitHashList, v)
 	}
+
+	headMax = len(commitHashList) - 2
 	/* (END)Get commit hash */
 }
 
@@ -125,6 +141,8 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	/* (END)Get reflog hash */
 
 	getCommitMessage()
+
+	rangeValidation()
 
 	if force {
 		log.Info("force update")

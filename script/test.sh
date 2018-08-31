@@ -164,6 +164,29 @@ test_ls() {
   teardown
 }
 
+# https://github.com/kamontia/qs/issues/71
+test_range_validation() {
+  FLAGS="$1 $2"
+  RANGE="$3"
+  MESSAGE="$4" # Expect to finish leaving this message(test target)
+  VALIDATION_FILE="test_range_validation.dat" # Temporary file to validate this test.
+
+  setup
+
+  set +e
+  ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE}
+  RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE})
+  rm ${VALIDATION_FILE}
+  set -e
+
+  if [[ ${RESULT} -ne 0 ]]; then # MESSAGE matches
+    echo "[passed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  else # Message not matches
+    echo "[failed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  fi
+  teardown
+}
+
 main() {
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
@@ -172,6 +195,8 @@ main() {
   test_message -n 3..5 -f -d -m "test message"
   test_ls -n 5
   test_ls -n 3..5
+  test_range_validation -f -n 9..11 "The first commit is included in the specified range."
+  test_range_validation -f -n 9..12 "QS cannot rebase out of range."
 
   echo "*** test result ***"
   cat ./test-"$$"-result
