@@ -18,6 +18,7 @@ import (
 var stdin string
 var beginNumber int
 var endNumber int
+var headMax int
 var rangeArray []string
 var commitHashList []string
 var commitMsgList []string
@@ -87,6 +88,8 @@ func getCommitHash() {
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		commitHashList = append(commitHashList, v)
 	}
+
+	headMax = len(commitHashList) - 2
 	/* (END)Get commit hash */
 }
 
