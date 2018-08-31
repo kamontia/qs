@@ -60,7 +60,7 @@ func displayCommitHashAndMessage() {
 
 	for i := limit; i >= 0; i-- {
 		/* Switch output corresponded to do squash */
-		if needsChangeMessage(i) {
+		if needsChangeMessage(i, beginNumber, endNumber) {
 			if runtime.GOOS == "windows" {
 				log.Warnf("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
 			} else {
@@ -207,8 +207,8 @@ func pickupSquashRange(num string) {
 
 }
 
-func needsChangeMessage(i int) bool {
-	if beginNumber > i && i >= endNumber {
+func needsChangeMessage(i int, begin int, end int) bool {
+	if begin > i && i >= end {
 		return true
 	} else {
 		return false
@@ -269,13 +269,13 @@ func main() {
 			if specifiedMsg != "" {
 				if beginNumber == i {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
-				} else if needsChangeMessage(i) {
+				} else if needsChangeMessage(i, beginNumber, endNumber) {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitSpecifiedMsgList[beginNumber])
 				} else {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
 				}
 			} else {
-				if needsChangeMessage(i) {
+				if needsChangeMessage(i, beginNumber, endNumber) {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsgList[beginNumber])
 				} else {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
