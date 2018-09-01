@@ -218,6 +218,19 @@ func needsChangeMessage(i int) bool {
 	}
 }
 
+func doRecovery(doneCh chan struct{}) {
+	cmd := exec.Command("git", "rebase", "--abort")
+	if err := cmd.Run(); err != nil {
+		log.Error(err)
+	}
+	cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
+	if err := cmd.Run(); err != nil {
+		log.Error(err)
+	}
+	doneCh <- struct{}{}
+	os.Exit(1)
+}
+
 func main() {
 
 	app := cli.NewApp()
@@ -277,7 +290,7 @@ func main() {
 					switch sig {
 					case syscall.SIGTERM, syscall.SIGINT, os.Interrupt:
 						log.Info("Catch signal.QS try to recorvery.")
-						// do something
+						doRecovery(doneCh)
 					}
 
 				case <-doneCh:
@@ -328,17 +341,7 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
-				log.Error("QS reseted this operation. Please git rebase manually")
-				log.Error(err)
-				cmd = exec.Command("git", "rebase", "--abort")
-				if err := cmd.Run(); err != nil {
-					log.Error(err)
-				}
-				cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
-				if err := cmd.Run(); err != nil {
-					log.Error(err)
-				}
-				os.Exit(1)
+				doRecovery(doneCh)
 			}
 		}
 		/* (END) git rebase */
@@ -353,16 +356,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			log.Error("QS reseted this operation. Please git rebase manually")
-			log.Error(err)
-			cmd = exec.Command("git", "rebase", "--abort")
-			if err := cmd.Run(); err != nil {
-				log.Error(err)
-			}
-			cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
-			if err := cmd.Run(); err != nil {
-				log.Error(err)
-			}
+			doRecovery(doneCh)
 		}
 		log.Info("rebase completed")
 
