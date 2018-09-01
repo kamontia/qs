@@ -32,9 +32,9 @@ func logrusInit(d bool) {
 	log.SetFormatter(&log.TextFormatter{ForceColors: true})
 	log.SetOutput(colorable.NewColorableStdout())
 	if debug {
-		log.SetLevel(log.InfoLevel)
+		log.SetLevel(log.DebugLevel)
 	} else {
-		log.SetLevel(log.WarnLevel)
+		log.SetLevel(log.InfoLevel)
 	}
 }
 
@@ -62,15 +62,15 @@ func displayCommitHashAndMessage() {
 		/* Switch output corresponded to do squash */
 		if needsChangeMessage(i, beginNumber, endNumber) {
 			if runtime.GOOS == "windows" {
-				log.Warnf("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
 			} else {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
 			}
 		} else {
 			if runtime.GOOS == "windows" {
-				log.Warnf("[%2d]\tpickup -> pickup %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\tpickup -> pickup %s %s", i, commitHashList[i], commitMsgList[i])
 			} else {
-				log.Warnf("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
 			}
 		}
 	}
@@ -145,7 +145,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	rangeValidation()
 
 	if force {
-		log.Info("force update")
+		log.Debug("force update")
 	} else {
 		displayCommitHashAndMessage()
 
@@ -159,12 +159,12 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 			fmt.Scan(&stdin)
 			switch stdin {
 			case "y":
-				log.Info("Fixup!")
+				log.Debug("Fixup!")
 			case "n":
-				log.Info("Abort!")
+				log.Debug("Abort!")
 				os.Exit(1)
 			default:
-				log.Info("You can input y or n")
+				log.Debug("You can input y or n")
 				continue
 			}
 			break
@@ -283,7 +283,7 @@ func main() {
 			}
 
 			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
-			log.Printf("git rebase HEAD~%d %s\n", i, speciedExec)
+			log.Debugf("git rebase HEAD~%d %s\n", i, speciedExec)
 
 			if c.Bool("debug") {
 				cmd.Stdin = os.Stdin
@@ -331,7 +331,7 @@ func main() {
 				log.Error(err)
 			}
 		}
-		log.Info("rebase completed")
+		log.Debug("rebase completed")
 
 		return nil
 	}
