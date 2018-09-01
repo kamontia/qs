@@ -200,7 +200,7 @@ test_signal_handling() {
   setup
   set +e
   REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
-  timeout  -k 3 ${SIGNAL} ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  timeout -s ${SIGNAL} 3 ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
   RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
   REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
   rm ${VALIDATION_FILE_ABS_PATH}
