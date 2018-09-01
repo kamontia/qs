@@ -169,17 +169,43 @@ test_range_validation() {
   FLAGS="$1 $2"
   RANGE="$3"
   MESSAGE="$4" # Expect to finish leaving this message(test target)
-  VALIDATION_FILE="test_range_validation.dat" # Temporary file to validate this test.
-
+  VALIDATION_FILE=$(mktemp tmp-XXXXX)  # Temporary file to validate this test.
+  VALIDATION_FILE_ABS_PATH=$(pwd)/${VALIDATION_FILE}
+  trap 'rm -v ${VALIDATION_FILE_ABS_PATH}; exit 1' 1 2 3 15
+  
   setup
 
   set +e
-  ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE}
-  RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE})
-  rm ${VALIDATION_FILE}
+  ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
   set -e
-
+  rm ${VALIDATION_FILE_ABS_PATH}
   if [[ ${RESULT} -ne 0 ]]; then # MESSAGE matches
+    echo "[passed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  else # Message not matches
+    echo "[failed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  fi
+  teardown
+}
+
+# https://github.com/kamontia/qs/issues/59
+test_signal_handling() {
+  FLAGS="$1 $2"
+  RANGE="$3"
+  MESSAGE="$4" # Expect to finish leaving this message(test target)
+  SIGNAL="$5" # 2:SIGINT 15:SIGTERM
+  VALIDATION_FILE=$(mktemp tmp-XXXXX)  # Temporary file to validate this test.
+  VALIDATION_FILE_ABS_PATH=$(pwd)/${VALIDATION_FILE}
+  
+  setup
+  set +e
+  REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
+  timeout  -k 3 ${SIGNAL} ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
+  REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
+  rm ${VALIDATION_FILE_ABS_PATH}
+  set -e
+  if [[ ${RESULT} -ne 0 ]] && [[ "${REFLOG_HASH_1}==${REFLOG_HASH_2}" ]]; then # MESSAGE matches
     echo "[passed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
   else # Message not matches
     echo "[failed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
@@ -197,6 +223,7 @@ main() {
   test_ls -n 3..5
   test_range_validation -f -n 9..11 "The first commit is included in the specified range."
   test_range_validation -f -n 9..12 "QS cannot rebase out of range."
+  test_signal_handling -f -n 1..10 "Completed. Please rebase manually." 2
 
   echo "*** test result ***"
   cat ./test-"$$"-result
