@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 
 	"github.com/codegangsta/cli"
 	colorable "github.com/mattn/go-colorable"
@@ -253,6 +256,36 @@ func main() {
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
 
+		// Create thread for handling signal
+		wg := sync.WaitGroup{}
+		doneCh := make(chan struct{}, 1)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			sigCh := make(chan os.Signal, 1)
+			signal.Notify(sigCh,
+				syscall.SIGTERM,
+				syscall.SIGINT,
+				os.Interrupt) // For windows
+
+			defer signal.Stop(sigCh)
+
+			for {
+				select {
+				case sig := <-sigCh:
+					switch sig {
+					case syscall.SIGTERM, syscall.SIGINT, os.Interrupt:
+						log.Info("Catch signal.QS try to recorvery.")
+						// do something
+					}
+
+				case <-doneCh:
+					return
+				}
+			}
+		}()
+
 		// Parse number(--number, -n) parameter
 
 		/* (WIP) git rebase */
@@ -332,6 +365,10 @@ func main() {
 			}
 		}
 		log.Info("rebase completed")
+
+		// Stop gorutine
+		doneCh <- struct{}{}
+		wg.Wait()
 
 		return nil
 	}
