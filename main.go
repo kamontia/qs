@@ -219,6 +219,7 @@ func needsChangeMessage(i int) bool {
 }
 
 func doRecovery(doneCh chan struct{}) {
+	log.Error("Error. QS try to recovery...")
 	cmd := exec.Command("git", "rebase", "--abort")
 	if err := cmd.Run(); err != nil {
 		log.Error(err)
@@ -228,6 +229,7 @@ func doRecovery(doneCh chan struct{}) {
 		log.Error(err)
 	}
 	doneCh <- struct{}{}
+	log.Error("Completed. Please rebase manually.")
 	os.Exit(1)
 }
 
