@@ -188,6 +188,31 @@ test_range_validation() {
   teardown
 }
 
+# https://github.com/kamontia/qs/issues/59
+test_signal_handling() {
+  FLAGS="$1 $2"
+  RANGE="$3"
+  MESSAGE="$4" # Expect to finish leaving this message(test target)
+  SIGNAL="$5" # 2:SIGINT 15:SIGTERM
+  VALIDATION_FILE=$(mktemp tmp-XXXXX)  # Temporary file to validate this test.
+  VALIDATION_FILE_ABS_PATH=$(pwd)/${VALIDATION_FILE}
+  
+  setup
+  set +e
+  REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
+  timeout -s ${SIGNAL} 3 ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
+  REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
+  rm ${VALIDATION_FILE_ABS_PATH}
+  set -e
+  if [[ ${RESULT} -ne 0 ]] && [[ "${REFLOG_HASH_1}==${REFLOG_HASH_2}" ]]; then # MESSAGE matches
+    echo "[passed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  else # Message not matches
+    echo "[failed] ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} EXPECTED MESSAGE ${MESSAGE}" >> ./../test-$$-result
+  fi
+  teardown
+}
+
 main() {
   test_squashed -n 5 -f -d
   test_squashed -n 0..5 -f -d
@@ -198,6 +223,7 @@ main() {
   test_ls -n 3..5
   test_range_validation -f -n 9..11 "The first commit is included in the specified range."
   test_range_validation -f -n 9..12 "QS cannot rebase out of range."
+  test_signal_handling -f -n 1..10 "Completed. Please rebase manually." 2
 
   echo "*** test result ***"
   cat ./test-"$$"-result
