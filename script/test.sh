@@ -196,11 +196,12 @@ test_signal_handling() {
   SIGNAL="$5" # 2:SIGINT 15:SIGTERM
   VALIDATION_FILE=$(mktemp tmp-XXXXX)  # Temporary file to validate this test.
   VALIDATION_FILE_ABS_PATH=$(pwd)/${VALIDATION_FILE}
-  
+  # TIMEOUT_COMMAND="sleep 2; ps $(pgrep qs) && kill -2 $(pgrep qs)"
   setup
   set +e
   REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
-  timeout -s ${SIGNAL} 3 ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  (./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}) & sleep 2; ps $(pgrep qs) && kill -2 $(pgrep qs)
+  cat ${VALIDATION_FILE_ABS_PATH}
   RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
   REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
   rm ${VALIDATION_FILE_ABS_PATH}
@@ -214,15 +215,15 @@ test_signal_handling() {
 }
 
 main() {
-  test_squashed -n 5 -f -d
-  test_squashed -n 0..5 -f -d
-  test_rebase_abort
-  test_message -n 5 -f -d -m "test message"
-  test_message -n 3..5 -f -d -m "test message"
-  test_ls -n 5
-  test_ls -n 3..5
-  test_range_validation -f -n 9..11 "The first commit is included in the specified range."
-  test_range_validation -f -n 9..12 "QS cannot rebase out of range."
+  #test_squashed -n 5 -f -d
+  #test_squashed -n 0..5 -f -d
+  #test_rebase_abort
+  #test_message -n 5 -f -d -m "test message"
+  #test_message -n 3..5 -f -d -m "test message"
+  #test_ls -n 5
+  #test_ls -n 3..5
+  #test_range_validation -f -n 9..11 "The first commit is included in the specified range."
+  #test_range_validation -f -n 9..12 "QS cannot rebase out of range."
   test_signal_handling -f -n 1..10 "Completed. Please rebase manually." 2
 
   echo "*** test result ***"
