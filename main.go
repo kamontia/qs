@@ -4,10 +4,13 @@ import (
 	"fmt"
 	"os"
 	"os/exec"
+	"os/signal"
 	"regexp"
 	"runtime"
 	"strconv"
 	"strings"
+	"sync"
+	"syscall"
 
 	"github.com/codegangsta/cli"
 	colorable "github.com/mattn/go-colorable"
@@ -215,6 +218,21 @@ func needsChangeMessage(i int, begin int, end int) bool {
 	}
 }
 
+func doRecovery(doneCh chan struct{}) {
+	log.Error("Error. QS try to recovery...")
+	cmd := exec.Command("git", "rebase", "--abort")
+	if err := cmd.Run(); err != nil {
+		log.Error(err)
+	}
+	cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
+	if err := cmd.Run(); err != nil {
+		log.Error(err)
+	}
+	doneCh <- struct{}{}
+	log.Error("Completed. Please rebase manually.")
+	os.Exit(1)
+}
+
 func main() {
 
 	app := cli.NewApp()
@@ -252,6 +270,36 @@ func main() {
 		pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
+
+		// Create thread for handling signal
+		wg := sync.WaitGroup{}
+		doneCh := make(chan struct{}, 1)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+
+			sigCh := make(chan os.Signal, 1)
+			signal.Notify(sigCh,
+				syscall.SIGTERM,
+				syscall.SIGINT,
+				os.Interrupt) // For windows
+
+			defer signal.Stop(sigCh)
+
+			for {
+				select {
+				case sig := <-sigCh:
+					switch sig {
+					case syscall.SIGTERM, syscall.SIGINT, os.Interrupt:
+						log.Info("Catch signal.QS try to recorvery.")
+						doRecovery(doneCh)
+					}
+
+				case <-doneCh:
+					return
+				}
+			}
+		}()
 
 		// Parse number(--number, -n) parameter
 
@@ -295,17 +343,7 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
-				log.Error("QS reseted this operation. Please git rebase manually")
-				log.Error(err)
-				cmd = exec.Command("git", "rebase", "--abort")
-				if err := cmd.Run(); err != nil {
-					log.Error(err)
-				}
-				cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
-				if err := cmd.Run(); err != nil {
-					log.Error(err)
-				}
-				os.Exit(1)
+				doRecovery(doneCh)
 			}
 		}
 		/* (END) git rebase */
@@ -320,18 +358,13 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			log.Error("QS reseted this operation. Please git rebase manually")
-			log.Error(err)
-			cmd = exec.Command("git", "rebase", "--abort")
-			if err := cmd.Run(); err != nil {
-				log.Error(err)
-			}
-			cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
-			if err := cmd.Run(); err != nil {
-				log.Error(err)
-			}
+			doRecovery(doneCh)
 		}
 		log.Debug("rebase completed")
+
+		// Stop gorutine
+		doneCh <- struct{}{}
+		wg.Wait()
 
 		return nil
 	}
