@@ -200,7 +200,10 @@ test_signal_handling() {
   setup
   set +e
   REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
-  timeout -s ${SIGNAL} 3 ./"$EXEC_COMMAND" ${FLAGS} ${RANGE} | tee ${VALIDATION_FILE_ABS_PATH}
+  ./"$EXEC_COMMAND" -f -n 1..10 > "${VALIDATION_FILE_ABS_PATH}" &
+  sleep 1 # Wait for the qs command to be executed
+  kill -${SIGNAL} $!
+  sleep 1 # Wait for qs command to catch sigint
   RESULT=$(grep -c "${MESSAGE}" ${VALIDATION_FILE_ABS_PATH})
   REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
   rm ${VALIDATION_FILE_ABS_PATH}
