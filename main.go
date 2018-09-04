@@ -263,7 +263,7 @@ func main() {
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
 
-		// Create thread for handling signal
+		/* Create thread for handling signal */
 		wg := sync.WaitGroup{}
 		doneCh := make(chan struct{}, 1)
 		wg.Add(1)
@@ -274,7 +274,7 @@ func main() {
 			signal.Notify(sigCh,
 				syscall.SIGTERM,
 				syscall.SIGINT,
-				os.Interrupt) // For windows
+				os.Interrupt) /* For Windows */
 
 			defer signal.Stop(sigCh)
 
@@ -293,10 +293,10 @@ func main() {
 			}
 		}()
 
-		// Parse number(--number, -n) parameter
+		/* Parse number(--number, -n) parameter */
 
 		/* (WIP) git rebase */
-		/**
+		/*
 		git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
 		*/
 
@@ -345,7 +345,7 @@ func main() {
 		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
 		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
 
-		// Transfer the command I/O to Standard I/O
+		/* Transfer the command I/O to Standard I/O */
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -355,7 +355,7 @@ func main() {
 		}
 		log.Debug("rebase completed")
 
-		// Stop gorutine
+		/* Stop gorutine */
 		doneCh <- struct{}{}
 		wg.Wait()
 
