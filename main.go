@@ -81,7 +81,6 @@ func displayCommitHashAndMessage() {
 
 func rangeValidation() {
 	if beginNumber > headMax {
-		// displayCommitHashAndMessage()
 		log.Error("QS cannot rebase out of range.")
 		os.Exit(1)
 	} else if beginNumber == headMax {
