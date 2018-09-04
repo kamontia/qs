@@ -17,7 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-/* Definisiotn */
+/* Definition */
 var stdin string
 var beginNumber int
 var endNumber int
