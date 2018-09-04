@@ -17,7 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-/* Definisiotn */
+/* Definition */
 var stdin string
 var beginNumber int
 var endNumber int
@@ -77,12 +77,10 @@ func displayCommitHashAndMessage() {
 			}
 		}
 	}
-	/* (END) Display commit hash and message */
 }
 
 func rangeValidation() {
 	if beginNumber > headMax {
-		// displayCommitHashAndMessage()
 		log.Error("QS cannot rebase out of range.")
 		os.Exit(1)
 	} else if beginNumber == headMax {
@@ -94,7 +92,6 @@ func rangeValidation() {
 }
 
 func getCommitHash() {
-	/* Get commit hash */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -106,11 +103,9 @@ func getCommitHash() {
 	}
 
 	headMax = len(commitHashList) - 2
-	/* (END)Get commit hash */
 }
 
 func getCommitMessage() {
-	/* Get commit message */
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
 		log.Error(err)
@@ -122,7 +117,6 @@ func getCommitMessage() {
 		commitNewMsgList = append(commitNewMsgList, fmt.Sprintf("fixup! %s", v))
 		commitSpecifiedMsgList = append(commitSpecifiedMsgList, fmt.Sprintf("fixup! %s", specifiedMsg))
 	}
-	/* (END)Get commit message */
 }
 
 func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
@@ -176,7 +170,6 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 }
 
 func pickupSquashRange(num string) {
-	/* Pick up squash range */
 	/* TODO: Check error strictly */
 	var error error
 
@@ -206,7 +199,6 @@ func pickupSquashRange(num string) {
 			log.Error(error)
 		}
 	}
-	/* (END) Pick up squash range */
 
 }
 
@@ -271,7 +263,7 @@ func main() {
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
 
-		// Create thread for handling signal
+		/* Create thread for handling signal */
 		wg := sync.WaitGroup{}
 		doneCh := make(chan struct{}, 1)
 		wg.Add(1)
@@ -282,7 +274,7 @@ func main() {
 			signal.Notify(sigCh,
 				syscall.SIGTERM,
 				syscall.SIGINT,
-				os.Interrupt) // For windows
+				os.Interrupt) /* For Windows */
 
 			defer signal.Stop(sigCh)
 
@@ -301,15 +293,16 @@ func main() {
 			}
 		}()
 
-		// Parse number(--number, -n) parameter
+		/* Parse number(--number, -n) parameter */
 
 		/* (WIP) git rebase */
-		/**
+		/*
 		git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
 		*/
+
 		/* Suppress vim editor launching */
 		os.Setenv("GIT_EDITOR", ":")
-		/* (END) Suppress vim editor launching */
+
 		for i := beginNumber; i >= 0; i-- {
 			speciedHead := fmt.Sprintf("HEAD~%d", i+1)
 			var speciedExec string
@@ -352,7 +345,7 @@ func main() {
 		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
 		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
 
-		// Transfer the command I/O to Standard I/O
+		/* Transfer the command I/O to Standard I/O */
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -362,7 +355,7 @@ func main() {
 		}
 		log.Debug("rebase completed")
 
-		// Stop gorutine
+		/* Stop gorutine */
 		doneCh <- struct{}{}
 		wg.Wait()
 
