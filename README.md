@@ -1,4 +1,4 @@
-# qs
+# Quick Squash
 [![GitHub release](https://img.shields.io/github/release/kamontia/qs/all.svg?style=flat-square)][release]
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
 [![CircleCI](https://circleci.com/gh/moutend/gip/tree/master.svg?style=svg)][status]
@@ -6,6 +6,8 @@
 [release]: https://github.com/kamontia/qs/releases
 [license]: https://github.com/kamontia/qs/blob/master/LICENSE
 [status]: https://circleci.com/gh/kamontia/qs
+
+<div align="left"><img src="https://github.com/kamontia/qs/blob/assets/assets/logo_transparent.png" width="350px"></div>
 
 ## Description
 'qs' is the git support command without the interactive editor.  
@@ -57,12 +59,12 @@ $ go get github.com/kamontia/qs
 ## Contribution
 
 1. Fork ([https://github.com/kamontia/qs/fork](https://github.com/kamontia/qs/fork))
-1. Create a feature branch
-1. Run `go fmt`
-1. Commit your changes
-1. Rebase your local changes against the master branch
-1. Run test suite with the `./script/test.sh` command and confirm that it passes
-1. Create a new Pull Request
+2. Create a feature branch
+3. Run `go fmt`
+4. Commit your changes
+5. Rebase your local changes against the master branch
+6. Run test suite with the `./script/test.sh` command and confirm that it passes
+7. Create a new Pull Request
 
 ## Author
 
