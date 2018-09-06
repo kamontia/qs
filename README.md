@@ -63,7 +63,7 @@ $ go get github.com/kamontia/qs
 3. Run `go fmt`
 4. Commit your changes
 5. Rebase your local changes against the master branch
-6. Run test suite with the `./script/test.sh` command and confirm that it passes
+6. Run test suite with the `go test` and `./script/test.sh` command and confirm that it passes
 7. Create a new Pull Request
 
 ## Author
