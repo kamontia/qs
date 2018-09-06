@@ -1,5 +1,11 @@
 # qs
-[![CircleCI](https://circleci.com/gh/kamontia/qs.svg?style=svg)](https://circleci.com/gh/kamontia/qs)
+[![GitHub release](https://img.shields.io/github/release/kamontia/qs/all.svg?style=flat-square)][release]
+[![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
+[![CircleCI](https://circleci.com/gh/moutend/gip/tree/master.svg?style=svg)][status]
+
+[release]: https://github.com/kamontia/qs/releases
+[license]: https://github.com/kamontia/qs/blob/master/LICENSE
+[status]: https://circleci.com/gh/kamontia/qs
 
 ## Description
 'qs' is the git support command without the interactive editor.  
