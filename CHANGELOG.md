@@ -1,6 +1,6 @@
 # Change Log
 
-## [Unreleased](https://github.com/kamontia/qs/tree/HEAD)
+## [v0.2.0](https://github.com/kamontia/qs/tree/v0.2.0)
 
 [Full Changelog](https://github.com/kamontia/qs/compare/v0.1.0...HEAD)
 
