@@ -1,19 +1,52 @@
-## 0.1.0 (2018-08-12)
+## Change Log
 
-Initial release
+### upcoming (2018/09/07 16:53 +09:00)
+- [#95](https://github.com/kamontia/qs/pull/95) Update document for contribution (@chaspy)
+- [#92](https://github.com/kamontia/qs/pull/92) Add logo (@kamontia)
+- [#94](https://github.com/kamontia/qs/pull/94) Add badges to show the release version and license (@chaspy)
+- [#89](https://github.com/kamontia/qs/pull/89) Fix typo and comments (@chaspy)
+- [#88](https://github.com/kamontia/qs/pull/88) [WIP]not use timeout command (@chaspy)
+- [#84](https://github.com/kamontia/qs/pull/84) Handling os.signal (@kamontia)
+- [#83](https://github.com/kamontia/qs/pull/83) Add trap and mktemp command (@kamontia)
+- [#82](https://github.com/kamontia/qs/pull/82) Change loglevel appropriately (@chaspy)
+- [#81](https://github.com/kamontia/qs/pull/81) Update gopkg.lock for coloring package when Windows envriontment (@chaspy)
+- [#79](https://github.com/kamontia/qs/pull/79) Add go test base (@chaspy)
+- [#77](https://github.com/kamontia/qs/pull/77) Validate range (@kamontia)
+- [#75](https://github.com/kamontia/qs/pull/75) Support text color for windows (@kamontia)
+- [#74](https://github.com/kamontia/qs/pull/74) Refactor and improve test script (@chaspy)
+- [#72](https://github.com/kamontia/qs/pull/72) Ignore test directory (@chaspy)
+- [#70](https://github.com/kamontia/qs/pull/70) Set limit to display the commit history for checking rebase (@chaspy)
+- [#68](https://github.com/kamontia/qs/pull/68) Refactor main.go (@kamontia)
+- [#67](https://github.com/kamontia/qs/pull/67) Update the contribution guide (@chaspy)
+- [#63](https://github.com/kamontia/qs/pull/63) Add subcommand for "qs ls" (@chaspy)
+- [#60](https://github.com/kamontia/qs/pull/60) Fix typo (@chaspy)
+- [#56](https://github.com/kamontia/qs/pull/56) Update README for installation (@chaspy)
 
-### Added
-
-- Add Fundamental features
-
-### Deprecated
-
-- Nothing
-
-### Removed
-
-- Nothing
-
-### Fixed
-
-- Nothing
+### v0.1.0 (2018/08/26 15:19 +09:00)
+- [#54](https://github.com/kamontia/qs/pull/54) Update issue templates (@kamontia)
+- [#52](https://github.com/kamontia/qs/pull/52) Create LICENSE (@kamontia)
+- [#47](https://github.com/kamontia/qs/pull/47) Refactor test script (@chaspy)
+- [#46](https://github.com/kamontia/qs/pull/46) Improve log expression (@kamontia)
+- [#49](https://github.com/kamontia/qs/pull/49) Add demo (@kamontia)
+- [#44](https://github.com/kamontia/qs/pull/44) Update readme v0.1.0 (@chaspy)
+- [#38](https://github.com/kamontia/qs/pull/38) Feature error handling by git rebase --abort (@kamontia)
+- [#43](https://github.com/kamontia/qs/pull/43) Add message flag (@chaspy)
+- [#41](https://github.com/kamontia/qs/pull/41) Feature support two digit (@kamontia)
+- [#32](https://github.com/kamontia/qs/pull/32) Update/issue11 suppress logging (@kamontia)
+- [#39](https://github.com/kamontia/qs/pull/39) validate the value of number flag (@chaspy)
+- [#37](https://github.com/kamontia/qs/pull/37) Allow prepare flag with test (@chaspy)
+- [#31](https://github.com/kamontia/qs/pull/31) Aggregate commit message (@chaspy)
+- [#30](https://github.com/kamontia/qs/pull/30) Improve test (@chaspy)
+- [#27](https://github.com/kamontia/qs/pull/27) Add the logic to treat with single number option (@kamontia)
+- [#24](https://github.com/kamontia/qs/pull/24) Feature/enable to squash with specified rang (@kamontia)
+- [#23](https://github.com/kamontia/qs/pull/23) Add prepare flag for test code (@chaspy)
+- [#22](https://github.com/kamontia/qs/pull/22) Diet main.go (@chaspy)
+- [#20](https://github.com/kamontia/qs/pull/20) Use dep (@chaspy)
+- [#18](https://github.com/kamontia/qs/pull/18) Add debug flag (@chaspy)
+- [#16](https://github.com/kamontia/qs/pull/16) Add CI status badge (@chaspy)
+- [#15](https://github.com/kamontia/qs/pull/15) Merge localTest.sh to script/test.sh (@chaspy)
+- [#9](https://github.com/kamontia/qs/pull/9) #4 Feature/squash specified number (@kamontia)
+- [#8](https://github.com/kamontia/qs/pull/8) Add Test (@chaspy)
+- [#7](https://github.com/kamontia/qs/pull/7) Add force option (@chaspy)
+- [#6](https://github.com/kamontia/qs/pull/6) Add the logic to parse parameter (@kamontia)
+- [#1](https://github.com/kamontia/qs/pull/1) Feature/simple functions (@kamontia)
