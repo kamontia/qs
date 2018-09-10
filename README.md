@@ -1,7 +1,7 @@
 # Quick Squash
 [![GitHub release](https://img.shields.io/github/release/kamontia/qs/all.svg?style=flat-square)][release]
 [![MIT License](https://img.shields.io/badge/license-MIT-blue.svg?style=flat-square)][license]
-[![CircleCI](https://circleci.com/gh/moutend/gip/tree/master.svg?style=svg)][status]
+[![CircleCI](https://circleci.com/gh/kamontia/qs.svg?style=svg)][status]
 
 [release]: https://github.com/kamontia/qs/releases
 [license]: https://github.com/kamontia/qs/blob/master/LICENSE
