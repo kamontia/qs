@@ -293,13 +293,6 @@ func main() {
 			}
 		}()
 
-		/* Parse number(--number, -n) parameter */
-
-		/* (WIP) git rebase */
-		/*
-		git rebase HEAD~N --exec="git commit -m"squash! commit messages" "
-		*/
-
 		/* Suppress vim editor launching */
 		os.Setenv("GIT_EDITOR", ":")
 
@@ -339,7 +332,6 @@ func main() {
 				doRecovery(doneCh)
 			}
 		}
-		/* (END) git rebase */
 
 		/* git rebase with autosquash option */
 		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
