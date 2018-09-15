@@ -105,6 +105,18 @@ func getCommitHash() {
 	headMax = len(commitHashList) - 2
 }
 
+func getReflogHash() {
+	out, err := exec.Command("git", "reflog", "--format=%h").Output()
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		reflogHashList = append(reflogHashList, v)
+	}
+}
+
 func getCommitMessage() {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
@@ -124,21 +136,8 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 	var sNum = strconv.Itoa(beginNumber)
 
 	getCommitHash()
-
-	/* Get reflog hash */
-	out, err := exec.Command("git", "reflog", "--format=%h").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		reflogHashList = append(reflogHashList, v)
-	}
-	/* (END)Get reflog hash */
-
+	getReflogHash()
 	getCommitMessage()
-
 	rangeValidation()
 
 	if force {
@@ -147,7 +146,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
 		displayCommitHashAndMessage()
 
 		fmt.Println("Do you squash the above commits?(y/n)")
-		out, err = exec.Command("git", "log", "--oneline", "-n", sNum).Output()
+		out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 		if err != nil {
 			log.Error(out)
 			os.Exit(1)
