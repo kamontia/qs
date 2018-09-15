@@ -334,7 +334,7 @@ func main() {
 
 		/* git rebase with autosquash option */
 		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
-		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet")
+		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet", "--preserve-merges")
 
 		/* Transfer the command I/O to Standard I/O */
 		cmd.Stdin = os.Stdin
