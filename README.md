@@ -56,6 +56,13 @@ To install, use `go get`:
 $ go get github.com/kamontia/qs
 ```
 
+If you can use `brew`:
+
+```bash
+$ brew tap kamontia/qs
+$ brew install qs
+```
+
 ## Contribution
 
 1. Fork ([https://github.com/kamontia/qs/fork](https://github.com/kamontia/qs/fork))
