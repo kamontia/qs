@@ -12,9 +12,9 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/codegangsta/cli"
 	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
+	"github.com/urfave/cli"
 )
 
 /* Definition */
