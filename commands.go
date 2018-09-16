@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"./model"
+	"github.com/kamontia/qs/model"
 	"github.com/urfave/cli"
 )
 

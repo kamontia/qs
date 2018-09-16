@@ -12,8 +12,7 @@ import (
 	"sync"
 	"syscall"
 
-	"./model"
-
+	"github.com/kamontia/qs/model"
 	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
