@@ -25,7 +25,6 @@ var beginNumber int
 var endNumber int
 var headMax int
 var specifiedMsg string
-var gci = new(model.GitCommitInfo)
 
 func logrusInit(d bool) {
 	var debug = d
@@ -47,7 +46,7 @@ func validate(n string) {
 	}
 }
 
-func displayCommitHashAndMessage() {
+func displayCommitHashAndMessage(gci *model.GitCommitInfo) {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
 
 	/* set limit to display the history */
@@ -88,7 +87,7 @@ func rangeValidation() {
 	}
 }
 
-func getCommitHash() {
+func getCommitHash(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -102,7 +101,7 @@ func getCommitHash() {
 	headMax = len(gci.CommitHashList) - 2
 }
 
-func getReflogHash() {
+func getReflogHash(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "reflog", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -114,7 +113,7 @@ func getReflogHash() {
 	}
 }
 
-func getCommitMessage() {
+func getCommitMessage(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
 		log.Error(err)
@@ -128,19 +127,19 @@ func getCommitMessage() {
 	}
 }
 
-func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
+func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
-	getCommitHash()
-	getReflogHash()
-	getCommitMessage()
+	getCommitHash(gci)
+	getReflogHash(gci)
+	getCommitMessage(gci)
 	rangeValidation()
 
 	if force {
 		log.Debug("force update")
 	} else {
-		displayCommitHashAndMessage()
+		displayCommitHashAndMessage(gci)
 
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
@@ -206,7 +205,7 @@ func needsChangeMessage(i int, begin int, end int) bool {
 	}
 }
 
-func doRecovery(doneCh chan struct{}) {
+func doRecovery(doneCh chan struct{}, gci *model.GitCommitInfo) {
 	log.Error("Error. QS try to recovery...")
 	cmd := exec.Command("git", "rebase", "--abort")
 	if err := cmd.Run(); err != nil {
@@ -252,12 +251,15 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
+		/* Create GitCommit Info */
+		gci := new(model.GitCommitInfo)
+
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
 		pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
-		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
+		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci)
 
 		/* Create thread for handling signal */
 		wg := sync.WaitGroup{}
@@ -280,7 +282,7 @@ func main() {
 					switch sig {
 					case syscall.SIGTERM, syscall.SIGINT, os.Interrupt:
 						log.Info("Catch signal.QS try to recorvery.")
-						doRecovery(doneCh)
+						doRecovery(doneCh, gci)
 					}
 
 				case <-doneCh:
@@ -325,7 +327,7 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
-				doRecovery(doneCh)
+				doRecovery(doneCh, gci)
 			}
 		}
 
@@ -339,7 +341,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			doRecovery(doneCh)
+			doRecovery(doneCh, gci)
 		}
 		log.Debug("rebase completed")
 

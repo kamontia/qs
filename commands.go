@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"./model"
 	"github.com/urfave/cli"
 )
 
@@ -19,14 +20,15 @@ var Commands = []cli.Command{
 			},
 		},
 		Action: func(c *cli.Context) error {
+			gci := new(model.GitCommitInfo)
 			validate(c.String("number"))
 			specifiedMsg = c.String("message")
 
 			pickupSquashRange(c.String("number"))
 			logrusInit(c.Bool("debug"))
-			getCommitHash()
-			getCommitMessage()
-			displayCommitHashAndMessage()
+			getCommitHash(gci)
+			getCommitMessage(gci)
+			displayCommitHashAndMessage(gci)
 			return nil
 		},
 	},
