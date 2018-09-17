@@ -44,7 +44,7 @@ package: cross-build
 	rm -rf $(DISTDIR)
 	mkdir $(DISTDIR)
 	pushd $(PKGDIR) > /dev/null && \
-		for P in `ls | xargs basename`; do zip -r $(CURRENT)/$(DISTDIR)/$$P.zip $$P; done && \
+		for P in `find . -type d | egrep -v '^\.$$'`; do zip -r $(CURRENT)/$(DISTDIR)/$$P.zip $$P; done && \
 		popd > /dev/null
 
 .PHONY: release
