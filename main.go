@@ -12,6 +12,7 @@ import (
 	"sync"
 	"syscall"
 
+	"github.com/kamontia/qs/model"
 	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -22,12 +23,6 @@ var stdin string
 var beginNumber int
 var endNumber int
 var headMax int
-var rangeArray []string
-var commitHashList []string
-var commitMsgList []string
-var commitNewMsgList []string
-var commitSpecifiedMsgList []string
-var reflogHashList []string
 var specifiedMsg string
 
 func logrusInit(d bool) {
@@ -50,13 +45,13 @@ func validate(n string) {
 	}
 }
 
-func displayCommitHashAndMessage() {
+func displayCommitHashAndMessage(gci *model.GitCommitInfo) {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
 
 	/* set limit to display the history */
 	var limit int
-	if beginNumber+2 > len(commitMsgList)-2 {
-		limit = len(commitMsgList) - 2
+	if beginNumber+2 > len(gci.CommitMsgList)-2 {
+		limit = len(gci.CommitMsgList) - 2
 	} else {
 		limit = beginNumber + 2
 	}
@@ -65,15 +60,15 @@ func displayCommitHashAndMessage() {
 		/* Switch output corresponded to do squash */
 		if needsChangeMessage(i, beginNumber, endNumber) {
 			if runtime.GOOS == "windows" {
-				log.Infof("[%2d]\tpickup -> squash %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\tpickup -> squash %s %s", i, gci.CommitHashList[i], gci.CommitMsgList[i])
 			} else {
-				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[36msquash \x1b[0m %s %s", i, gci.CommitHashList[i], gci.CommitMsgList[i])
 			}
 		} else {
 			if runtime.GOOS == "windows" {
-				log.Infof("[%2d]\tpickup -> pickup %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\tpickup -> pickup %s %s", i, gci.CommitHashList[i], gci.CommitMsgList[i])
 			} else {
-				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, commitHashList[i], commitMsgList[i])
+				log.Infof("[%2d]\t\x1b[35mpickup\x1b[0m -> \x1b[35mpickup \x1b[0m %s %s", i, gci.CommitHashList[i], gci.CommitMsgList[i])
 			}
 		}
 	}
@@ -91,7 +86,7 @@ func rangeValidation() {
 	}
 }
 
-func getCommitHash() {
+func getCommitHash(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -99,13 +94,13 @@ func getCommitHash() {
 	}
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		commitHashList = append(commitHashList, v)
+		gci.CommitHashList = append(gci.CommitHashList, v)
 	}
 
-	headMax = len(commitHashList) - 2
+	headMax = len(gci.CommitHashList) - 2
 }
 
-func getReflogHash() {
+func getReflogHash(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "reflog", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -113,11 +108,11 @@ func getReflogHash() {
 	}
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		reflogHashList = append(reflogHashList, v)
+		gci.ReflogHashList = append(gci.ReflogHashList, v)
 	}
 }
 
-func getCommitMessage() {
+func getCommitMessage(gci *model.GitCommitInfo) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
 		log.Error(err)
@@ -125,25 +120,25 @@ func getCommitMessage() {
 	}
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		commitMsgList = append(commitMsgList, v)
-		commitNewMsgList = append(commitNewMsgList, fmt.Sprintf("fixup! %s", v))
-		commitSpecifiedMsgList = append(commitSpecifiedMsgList, fmt.Sprintf("fixup! %s", specifiedMsg))
+		gci.CommitMsgList = append(gci.CommitMsgList, v)
+		gci.CommitNewMsgList = append(gci.CommitNewMsgList, fmt.Sprintf("fixup! %s", v))
+		gci.CommitSpecifiedMsgList = append(gci.CommitSpecifiedMsgList, fmt.Sprintf("fixup! %s", specifiedMsg))
 	}
 }
 
-func checkCurrentCommit(f bool, beginNumber int, endNumber int) {
+func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
-	getCommitHash()
-	getReflogHash()
-	getCommitMessage()
+	getCommitHash(gci)
+	getReflogHash(gci)
+	getCommitMessage(gci)
 	rangeValidation()
 
 	if force {
 		log.Debug("force update")
 	} else {
-		displayCommitHashAndMessage()
+		displayCommitHashAndMessage(gci)
 
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
@@ -209,13 +204,13 @@ func needsChangeMessage(i int, begin int, end int) bool {
 	}
 }
 
-func doRecovery(doneCh chan struct{}) {
+func doRecovery(doneCh chan struct{}, gci *model.GitCommitInfo) {
 	log.Error("Error. QS try to recovery...")
 	cmd := exec.Command("git", "rebase", "--abort")
 	if err := cmd.Run(); err != nil {
 		log.Error(err)
 	}
-	cmd = exec.Command("git", "reset", "--hard", reflogHashList[0])
+	cmd = exec.Command("git", "reset", "--hard", gci.ReflogHashList[0])
 	if err := cmd.Run(); err != nil {
 		log.Error(err)
 	}
@@ -255,12 +250,15 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
+		/* Create GitCommit Info */
+		gci := new(model.GitCommitInfo)
+
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
 		pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
-		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber)
+		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci)
 
 		/* Create thread for handling signal */
 		wg := sync.WaitGroup{}
@@ -283,7 +281,7 @@ func main() {
 					switch sig {
 					case syscall.SIGTERM, syscall.SIGINT, os.Interrupt:
 						log.Info("Catch signal.QS try to recorvery.")
-						doRecovery(doneCh)
+						doRecovery(doneCh, gci)
 					}
 
 				case <-doneCh:
@@ -303,15 +301,15 @@ func main() {
 				if beginNumber == i {
 					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
 				} else if needsChangeMessage(i, beginNumber, endNumber) {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitSpecifiedMsgList[beginNumber])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitSpecifiedMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
 				}
 			} else {
 				if needsChangeMessage(i, beginNumber, endNumber) {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitNewMsgList[beginNumber])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitNewMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", commitMsgList[i])
+					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
 				}
 			}
 
@@ -328,7 +326,7 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
-				doRecovery(doneCh)
+				doRecovery(doneCh, gci)
 			}
 		}
 
@@ -342,7 +340,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			doRecovery(doneCh)
+			doRecovery(doneCh, gci)
 		}
 		log.Debug("rebase completed")
 
