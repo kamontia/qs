@@ -1,8 +1,34 @@
 # Change Log
 
-## [v0.2.0](https://github.com/kamontia/qs/tree/v0.2.0)
+[Full Changelog](https://github.com/kamontia/qs/compare/v1.0.0...HEAD)
 
-[Full Changelog](https://github.com/kamontia/qs/compare/v0.1.0...HEAD)
+## [v1.0.0](https://github.com/kamontia/qs/tree/v1.0.0) (2018-09-17)
+[Full Changelog](https://github.com/kamontia/qs/compare/v0.2.0...v1.0.0)
+
+**Fixed bugs:**
+
+- Support Merge Commit [\#100](https://github.com/kamontia/qs/issues/100)
+- Support Merge Commit [\#101](https://github.com/kamontia/qs/pull/101) ([kamontia](https://github.com/kamontia))
+
+**Closed issues:**
+
+- Fix Makefile for release command [\#110](https://github.com/kamontia/qs/issues/110)
+- Update release version [\#108](https://github.com/kamontia/qs/issues/108)
+- Remove extra comments [\#98](https://github.com/kamontia/qs/issues/98)
+- Create Makefile [\#93](https://github.com/kamontia/qs/issues/93)
+- Support homebrew install [\#85](https://github.com/kamontia/qs/issues/85)
+
+**Merged pull requests:**
+
+- Refactor 0.2.0 [\#106](https://github.com/kamontia/qs/pull/106) ([kamontia](https://github.com/kamontia))
+- Change namespace of cli-framework [\#104](https://github.com/kamontia/qs/pull/104) ([chaspy](https://github.com/chaspy))
+- Remove comments [\#103](https://github.com/kamontia/qs/pull/103) ([chaspy](https://github.com/chaspy))
+- Update document for brew [\#102](https://github.com/kamontia/qs/pull/102) ([chaspy](https://github.com/chaspy))
+- Fix url for CI status badge [\#99](https://github.com/kamontia/qs/pull/99) ([chaspy](https://github.com/chaspy))
+- Add make file [\#105](https://github.com/kamontia/qs/pull/105) ([kamontia](https://github.com/kamontia))
+
+## [v0.2.0](https://github.com/kamontia/qs/tree/v0.2.0) (2018-09-07)
+[Full Changelog](https://github.com/kamontia/qs/compare/v0.1.0...v0.2.0)
 
 **Implemented enhancements:**
 
@@ -22,14 +48,18 @@
 - Ignore test direcory [\#69](https://github.com/kamontia/qs/issues/69)
 - Fix README for format [\#66](https://github.com/kamontia/qs/issues/66)
 - Limit displayed commits [\#65](https://github.com/kamontia/qs/issues/65)
+- Release v0.2.0 [\#64](https://github.com/kamontia/qs/issues/64)
 - Fix typo [\#58](https://github.com/kamontia/qs/issues/58)
 - Remove dep ensure from install section [\#57](https://github.com/kamontia/qs/issues/57)
 - Changing the log level [\#51](https://github.com/kamontia/qs/issues/51)
 - Support text color for windows [\#50](https://github.com/kamontia/qs/issues/50)
 - GoTest [\#36](https://github.com/kamontia/qs/issues/36)
+- Modify author and committer on git hub log [\#13](https://github.com/kamontia/qs/issues/13)
 
 **Merged pull requests:**
 
+- Upgrade v0.2.0 [\#97](https://github.com/kamontia/qs/pull/97) ([chaspy](https://github.com/chaspy))
+- Test generating CHANGELOG [\#96](https://github.com/kamontia/qs/pull/96) ([chaspy](https://github.com/chaspy))
 - Update document for contribution [\#95](https://github.com/kamontia/qs/pull/95) ([chaspy](https://github.com/chaspy))
 - Add badges to show the release version and license [\#94](https://github.com/kamontia/qs/pull/94) ([chaspy](https://github.com/chaspy))
 - Add logo [\#92](https://github.com/kamontia/qs/pull/92) ([kamontia](https://github.com/kamontia))
