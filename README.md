@@ -73,6 +73,16 @@ $ brew install qs
 6. Run test suite with the `go test` and `./script/test.sh` command and confirm that it passes
 7. Create a new Pull Request
 
+## Presentations / Articles
+### in Japanese
+- [最速でGitのコミットをまとめるコマンドqs(quick squash)を作ってみた](https://qiita.com/kamontia/items/ac5c7f99599049b545e9)
+- [複数のコミットをsquashするコマンド「qs(quick squash)」を作った](http://blog.chaspy.me/entry/2018/08/26/120000)
+- [14日間でサクサクっとOSSをリリースした話](https://speakerdeck.com/kamontia/talking-of-releasing-oss-in-14-days)
+
+### in English
+- [QS - CLI tool to quickly squash your commit](https://dev.to/chaspy/qs---cli-tool-to-quickly-squash-your-commit-246)
+- [Look back on our OSS activities](https://speakerdeck.com/chaspy/look-back-on-our-oss-activities)
+
 ## Author
 
 [Tatsuya Kamohara](https://github.com/kamontia)  
