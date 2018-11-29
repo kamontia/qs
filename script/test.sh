@@ -29,7 +29,7 @@ setup () {
   for ((i=0; i <= "$max"; i++)); do
       echo file-"${i}" >> file-"${i}"
       git add file-"${i}"
-      git commit -m "Add file-${i}"
+      git commit -m "Add file-${i}" -m "" -m "body"
   done
   echo "*** create $TESTDIR ***"
 }
