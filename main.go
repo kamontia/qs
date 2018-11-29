@@ -87,13 +87,13 @@ func rangeValidation() {
 }
 
 func getCommitHash(gci *model.GitCommitInfo) {
-	out, err := exec.Command("git", "log", "--oneline", "--format=%s%n%b[qsnewline]").Output()
+	out, err := exec.Command("git", "log", "--oneline", "--format=%s%n%b---qsnewline---").Output()
 	if err != nil {
 		log.Error(err)
 		os.Exit(1)
 	}
 
-	for _, v := range regexp.MustCompile("[qsnewline]").Split(string(out), -1) {
+	for _, v := range regexp.MustCompile("---qsnewline---").Split(string(out), -1) {
 		gci.CommitHashList = append(gci.CommitHashList, v)
 	}
 
