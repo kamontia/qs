@@ -294,27 +294,27 @@ func main() {
 		os.Setenv("GIT_EDITOR", ":")
 
 		for i := beginNumber; i >= 0; i-- {
-			speciedHead := fmt.Sprintf("HEAD~%d", i+1)
-			var speciedExec string
+			specifiedHead := fmt.Sprintf("HEAD~%d", i+1)
+			var specifiedExec string
 
 			if specifiedMsg != "" {
 				if beginNumber == i {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
+					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
 				} else if needsChangeMessage(i, beginNumber, endNumber) {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitSpecifiedMsgList[beginNumber])
+					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitSpecifiedMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
+					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
 				}
 			} else {
 				if needsChangeMessage(i, beginNumber, endNumber) {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitNewMsgList[beginNumber])
+					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitNewMsgList[beginNumber])
 				} else {
-					speciedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
+					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
 				}
 			}
 
-			cmd := exec.Command("git", "rebase", speciedHead, speciedExec)
-			log.Debugf("git rebase HEAD~%d %s\n", i, speciedExec)
+			cmd := exec.Command("git", "rebase", specifiedHead, specifiedExec)
+			log.Debugf("git rebase HEAD~%d %s\n", i, specifiedExec)
 
 			if c.Bool("debug") {
 				cmd.Stdin = os.Stdin
@@ -331,8 +331,8 @@ func main() {
 		}
 
 		/* git rebase with autosquash option */
-		speciedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
-		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", speciedHead, "--quiet", "--preserve-merges")
+		specifiedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
+		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", specifiedHead, "--quiet", "--preserve-merges")
 
 		/* Transfer the command I/O to Standard I/O */
 		cmd.Stdin = os.Stdin
