@@ -163,7 +163,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	}
 }
 
-func pickupSquashRange(num string) {
+func pickupSquashRange(num string) (int, int){
 	/* TODO: Check error strictly */
 	var error error
 
@@ -193,7 +193,7 @@ func pickupSquashRange(num string) {
 			log.Error(error)
 		}
 	}
-
+  return beginNumber, endNumber
 }
 
 func needsChangeMessage(i int, begin int, end int) bool {
@@ -256,7 +256,7 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		pickupSquashRange(c.String("number"))
+		beginNumber, endNumber := pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci)
 
