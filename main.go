@@ -20,8 +20,6 @@ import (
 
 /* Definition */
 var stdin string
-var beginNumber int
-var endNumber int
 var headMax int
 var specifiedMsg string
 
@@ -45,7 +43,7 @@ func validate(n string) {
 	}
 }
 
-func displayCommitHashAndMessage(gci *model.GitCommitInfo) {
+func displayCommitHashAndMessage(gci *model.GitCommitInfo, beginNumber int, endNumber int) {
 	/* Display commit hash and message. The [pickup|..] strings is colored */
 
 	/* set limit to display the history */
@@ -74,7 +72,7 @@ func displayCommitHashAndMessage(gci *model.GitCommitInfo) {
 	}
 }
 
-func rangeValidation() {
+func rangeValidation(beginNumber int, endNumber int) {
 	if beginNumber > headMax {
 		log.Error("QS cannot rebase out of range.")
 		os.Exit(1)
@@ -133,12 +131,12 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	getCommitHash(gci)
 	getReflogHash(gci)
 	getCommitMessage(gci)
-	rangeValidation()
+	rangeValidation(beginNumber, endNumber)
 
 	if force {
 		log.Debug("force update")
 	} else {
-		displayCommitHashAndMessage(gci)
+		displayCommitHashAndMessage(gci, beginNumber, endNumber)
 
 		fmt.Println("Do you squash the above commits?(y/n)")
 		out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
@@ -163,37 +161,39 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	}
 }
 
-func pickupSquashRange(num string) {
+func pickupSquashRange(num string) (int, int) {
 	/* TODO: Check error strictly */
 	var error error
+	var bn int
+	var en int
 
 	if strings.Contains(num, "..") {
 		/* Specify the range you aggregate */
 		rangeArray := strings.Split(num, "..")
-		beginNumber, error = strconv.Atoi(rangeArray[0])
+		bn, error = strconv.Atoi(rangeArray[0])
 		if error != nil {
 			log.Error(error)
 			os.Exit(1)
 		}
-		endNumber, error = strconv.Atoi(rangeArray[1])
+		en, error = strconv.Atoi(rangeArray[1])
 		if error != nil {
 			log.Error(error)
 			os.Exit(1)
 		}
-		if beginNumber < endNumber {
-			tmp := beginNumber
-			beginNumber = endNumber
-			endNumber = tmp
+		if bn < en {
+			tmp := bn
+			bn = en
+			en = tmp
 		}
 	} else {
 		/* Specify the one parameter you aggregate */
-		endNumber = 0
-		beginNumber, error = strconv.Atoi(num)
+		en = 0
+		bn, error = strconv.Atoi(num)
 		if error != nil {
 			log.Error(error)
 		}
 	}
-
+	return bn, en
 }
 
 func needsChangeMessage(i int, begin int, end int) bool {
@@ -256,7 +256,7 @@ func main() {
 		validate(c.String("number"))
 		specifiedMsg = c.String("message")
 
-		pickupSquashRange(c.String("number"))
+		beginNumber, endNumber := pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
 		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci)
 
