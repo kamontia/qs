@@ -24,11 +24,11 @@ var Commands = []cli.Command{
 			validate(c.String("number"))
 			specifiedMsg = c.String("message")
 
-			pickupSquashRange(c.String("number"))
+			beginNumber, endNumber := pickupSquashRange(c.String("number"))
 			logrusInit(c.Bool("debug"))
 			getCommitHash(gci)
 			getCommitMessage(gci)
-			displayCommitHashAndMessage(gci)
+			displayCommitHashAndMessage(gci, beginNumber, endNumber)
 			return nil
 		},
 	},
