@@ -30,4 +30,9 @@ func Test_pickupSquashRange(t *testing.T) {
   if begin != 4 || end != 2 {
     t.Errorf("begin: %v\nend: %v", begin, end)
   }
+
+  begin, end = pickupSquashRange("4..2")
+  if begin != 4 || end != 2 {
+    t.Errorf("begin: %v\nend: %v", begin, end)
+  }
 }
