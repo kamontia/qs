@@ -20,7 +20,6 @@ import (
 
 /* Definition */
 var stdin string
-var headMax int
 var specifiedMsg string
 
 func logrusInit(d bool) {
@@ -72,7 +71,7 @@ func displayCommitHashAndMessage(gci *model.GitCommitInfo, beginNumber int, endN
 	}
 }
 
-func rangeValidation(beginNumber int, endNumber int) {
+func rangeValidation(headMax int, beginNumber int, endNumber int) {
 	if beginNumber > headMax {
 		log.Error("QS cannot rebase out of range.")
 		os.Exit(1)
@@ -84,7 +83,7 @@ func rangeValidation(beginNumber int, endNumber int) {
 	}
 }
 
-func getCommitHash(gci *model.GitCommitInfo) {
+func getCommitHash(gci *model.GitCommitInfo) int {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 	if err != nil {
 		log.Error(err)
@@ -95,7 +94,8 @@ func getCommitHash(gci *model.GitCommitInfo) {
 		gci.CommitHashList = append(gci.CommitHashList, v)
 	}
 
-	headMax = len(gci.CommitHashList) - 2
+	headMax := len(gci.CommitHashList) - 2
+	return headMax
 }
 
 func getReflogHash(gci *model.GitCommitInfo) {
@@ -128,10 +128,10 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
-	getCommitHash(gci)
+	headMax := getCommitHash(gci)
 	getReflogHash(gci)
 	getCommitMessage(gci)
-	rangeValidation(beginNumber, endNumber)
+	rangeValidation(headMax, beginNumber, endNumber)
 
 	if force {
 		log.Debug("force update")
