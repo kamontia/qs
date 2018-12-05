@@ -29,13 +29,9 @@ func logrusInit(d bool) {
 	}
 }
 
-func validate(n string) {
+func validate(n string) bool {
 	r := regexp.MustCompile(`^[0-9]+$|^[0-9]+..[0-9]+$`)
-	isNum := r.MatchString(n)
-	if !isNum {
-		log.Error("invalid number flag")
-		os.Exit(1)
-	}
+	return r.MatchString(n)
 }
 
 func displayCommitHashAndMessage(gci *model.GitCommitInfo, beginNumber int, endNumber int) {
@@ -256,7 +252,11 @@ func main() {
 		/* Create GitCommit Info */
 		gci := new(model.GitCommitInfo)
 
-		validate(c.String("number"))
+		if !validate(c.String("number")) {
+			log.Error("invalid number flag")
+			os.Exit(1)
+		}
+
 		specifiedMsg := c.String("message")
 
 		beginNumber, endNumber := pickupSquashRange(c.String("number"))
