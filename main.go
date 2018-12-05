@@ -18,10 +18,6 @@ import (
 	"github.com/urfave/cli"
 )
 
-/* Definition */
-var stdin string
-var specifiedMsg string
-
 func logrusInit(d bool) {
 	var debug = d
 	log.SetFormatter(&log.TextFormatter{ForceColors: true})
@@ -110,7 +106,7 @@ func getReflogHash(gci *model.GitCommitInfo) {
 	}
 }
 
-func getCommitMessage(gci *model.GitCommitInfo) {
+func getCommitMessage(gci *model.GitCommitInfo, specifiedMsg string) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
 		log.Error(err)
@@ -124,13 +120,13 @@ func getCommitMessage(gci *model.GitCommitInfo) {
 	}
 }
 
-func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo) {
+func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo, specifiedMsg string) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
 	headMax := getCommitHash(gci)
 	getReflogHash(gci)
-	getCommitMessage(gci)
+	getCommitMessage(gci, specifiedMsg)
 	rangeValidation(headMax, beginNumber, endNumber)
 
 	if force {
@@ -145,6 +141,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 			os.Exit(1)
 		}
 		for {
+			var stdin string
 			fmt.Scan(&stdin)
 			switch stdin {
 			case "y":
@@ -254,11 +251,11 @@ func main() {
 		gci := new(model.GitCommitInfo)
 
 		validate(c.String("number"))
-		specifiedMsg = c.String("message")
+		specifiedMsg := c.String("message")
 
 		beginNumber, endNumber := pickupSquashRange(c.String("number"))
 		logrusInit(c.Bool("debug"))
-		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci)
+		checkCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci, specifiedMsg)
 
 		/* Create thread for handling signal */
 		wg := sync.WaitGroup{}
