@@ -22,12 +22,12 @@ var Commands = []cli.Command{
 		Action: func(c *cli.Context) error {
 			gci := new(model.GitCommitInfo)
 			validate(c.String("number"))
-			specifiedMsg = c.String("message")
+			specifiedMsg := c.String("message")
 
 			beginNumber, endNumber := pickupSquashRange(c.String("number"))
 			logrusInit(c.Bool("debug"))
 			getCommitHash(gci)
-			getCommitMessage(gci)
+			getCommitMessage(gci, specifiedMsg)
 			displayCommitHashAndMessage(gci, beginNumber, endNumber)
 			return nil
 		},
