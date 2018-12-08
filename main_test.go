@@ -38,7 +38,7 @@ func Test_pickupSquashRange(t *testing.T) {
 }
 
 func Test_rangeVaridation(t *testing.T) {
-	result := rangeValidation(3, 1, 2)
+	result := rangeValidation(3, 1)
 	if !result {
 		t.Error("range validation is failed")
 	}
