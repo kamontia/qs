@@ -67,16 +67,19 @@ func displayCommitHashAndMessage(gci *model.GitCommitInfo, beginNumber int, endN
 	}
 }
 
-func rangeValidation(headMax int, beginNumber int, endNumber int) {
+func rangeValidation(headMax int, beginNumber int) bool {
+	var result bool
 	if beginNumber > headMax {
-		log.Error("QS cannot rebase out of range.")
-		os.Exit(1)
+		log.Debug("QS cannot rebase out of range.")
+		result = false
 	} else if beginNumber == headMax {
-		log.Error("The first commit is included in the specified range. If necessary, please rebase with --root option manually.")
-		os.Exit(1)
+		log.Debug("The first commit is included in the specified range. If necessary, please rebase with --root option manually.")
+		result = false
 	} else {
 		log.Debug("Specified range is OK.")
+		result = true
 	}
+	return result
 }
 
 func getCommitHash(gci *model.GitCommitInfo) int {
@@ -127,7 +130,10 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	headMax := getCommitHash(gci)
 	getReflogHash(gci)
 	getCommitMessage(gci, specifiedMsg)
-	rangeValidation(headMax, beginNumber, endNumber)
+	if !rangeValidation(headMax, beginNumber) {
+		log.Error("Range validagion is failed")
+		os.Exit(1)
+	}
 
 	if force {
 		log.Debug("force update")

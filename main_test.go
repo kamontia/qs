@@ -36,3 +36,20 @@ func Test_pickupSquashRange(t *testing.T) {
 		t.Errorf("begin: %v\nend: %v", begin, end)
 	}
 }
+
+func Test_rangeVaridation(t *testing.T) {
+	result := rangeValidation(3, 1)
+	if !result {
+		t.Errorf("range validation is failed. return %v", result)
+	}
+
+	result = rangeValidation(1, 3)
+	if result {
+		t.Errorf("range validation is failed. return %v", result)
+	}
+
+	result = rangeValidation(1, 1)
+	if result {
+		t.Errorf("range validation is failed. return %v", result)
+	}
+}
