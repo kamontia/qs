@@ -93,18 +93,6 @@ func getCommitHash(gci *model.GitCommitInfo) int {
 	return headMax
 }
 
-func getReflogHash(gci *model.GitCommitInfo) {
-	out, err := exec.Command("git", "reflog", "--format=%h").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		gci.ReflogHashList = append(gci.ReflogHashList, v)
-	}
-}
-
 func getCommitMessage(gci *model.GitCommitInfo, specifiedMsg string) {
 	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 	if err != nil {
@@ -124,7 +112,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	var sNum = strconv.Itoa(beginNumber)
 
 	headMax := getCommitHash(gci)
-	getReflogHash(gci)
+	gci.AddReflogHash()
 	getCommitMessage(gci, specifiedMsg)
 	if !rangeValidation(headMax, beginNumber) {
 		log.Error("Range validagion is failed")
@@ -250,7 +238,8 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		/* Create GitCommit Info */
-		gci := new(model.GitCommitInfo)
+		// gci := new(model.GitCommitInfo)
+		gci := model.NewGitCommitInfo(model.GitCommander{})
 
 		if !validate(c.String("number")) {
 			log.Error("invalid number flag")
