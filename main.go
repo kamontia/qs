@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"sync"
-	"syscall"
+	"syscall" // "github.com/kamontia/qs/model"
 
-	"github.com/kamontia/qs/model"
+	"github.com/matsu0228/qs/model"
 	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
