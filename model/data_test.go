@@ -12,18 +12,16 @@ func TestAddReflogHash(t *testing.T) {
 	gci.AddReflogHash()
 
 	pp.Print(gci.ReflogHashList)
-
-	// TODO : check value
-	// got := 1
-	// want := 2
-	// if got != want {
-	// 	t.Fatalf("want %v, but %v:", want, got)
-	// }
+	got := len(gci.ReflogHashList)
+	want := 6
+	if got != want {
+		t.Fatalf("want %v, but %v:", want, got)
+	}
 }
 
 // testExecuter is mock of exuecuter
 type testExecuter struct{}
 
 func (g testExecuter) Reflog(opt string) ([]byte, error) {
-	return []byte("a517e3b\na517e3b\n0b860a1"), nil
+	return []byte("a517e3b\na517e3b\n0b860a1\na517e3b\na517e3b\n0b860a1"), nil
 }

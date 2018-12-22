@@ -20,18 +20,20 @@ type GitCommitInfo struct {
 	CommitNewMsgList       []string
 	CommitSpecifiedMsgList []string
 	ReflogHashList         []string
-	GitExecuter            Executer
+	/* コマンドを実行するための実装オブジェクトへの参照	*/
+	GitExecuter Executer
 }
 
-// NewGitCommitInfo is constructor
+// NewGitCommitInfo is constructor for GitExecutor
 func NewGitCommitInfo(e Executer) *GitCommitInfo {
 	return &GitCommitInfo{
 		GitExecuter: e,
 	}
 }
 
-// AddReflogHash collect reflogHash, then append to REflogHashList
+// AddReflogHash collect reflogHash, then append to ReflogHashList
 func (g *GitCommitInfo) AddReflogHash() {
+	/* GitExecutorは NewGitCommtiInfoで初期化されており、本番向けかテスト向けの実装を参照する */
 	out, err := g.GitExecuter.Reflog("--format=%h")
 	if err != nil {
 		log.Error(err)

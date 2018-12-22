@@ -10,6 +10,11 @@ func (g GitCommander) Reflog(opt string) ([]byte, error) {
 	return exec.Command("git", "reflog", opt).Output()
 }
 
+// Execute git log opts
+func (g GitCommander) Commitlog(opt string) ([]byte, error) {
+	return exec.Command("git", "log", opt).Output()
+}
+
 // TODO: このあたりをまるっと実装する
 // --------------------------------------
 //

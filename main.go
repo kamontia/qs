@@ -13,6 +13,7 @@ import (
 	"syscall"
 
 	"github.com/kamontia/qs/model"
+
 	colorable "github.com/mattn/go-colorable"
 	log "github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
@@ -112,6 +113,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	var sNum = strconv.Itoa(beginNumber)
 
 	headMax := getCommitHash(gci)
+
 	gci.AddReflogHash()
 	getCommitMessage(gci, specifiedMsg)
 	if !rangeValidation(headMax, beginNumber) {
@@ -238,7 +240,6 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		/* Create GitCommit Info */
-		// gci := new(model.GitCommitInfo)
 		gci := model.NewGitCommitInfo(model.GitCommander{})
 
 		if !validate(c.String("number")) {
