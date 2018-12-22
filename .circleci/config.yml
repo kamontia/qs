@@ -10,5 +10,5 @@ jobs:
       - checkout
       - run: dep ensure
       - run: go build
-      - run: go test
+      - run: go test -v ./...
       - run: ./script/test.sh
