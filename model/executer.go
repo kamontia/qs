@@ -20,7 +20,6 @@ func (g GitCommander) Commitlog(opts ...string) ([]byte, error) {
 // TODO: Implemantation
 // --------------------------------------
 //
-// out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
 // out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 
 // cmd = exec.Command("git", "reset", "--hard", gci.ReflogHashList[0])

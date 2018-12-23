@@ -26,7 +26,7 @@ var Commands = []cli.Command{
 
 			beginNumber, endNumber := pickupSquashRange(c.String("number"))
 			logrusInit(c.Bool("debug"))
-			getCommitHash(gci)
+			gci.AddCommitHash()
 			gci.AddCommitMessage(specifiedMsg)
 			displayCommitHashAndMessage(gci, beginNumber, endNumber)
 			return nil

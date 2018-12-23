@@ -60,3 +60,19 @@ func (g *GitCommitInfo) AddCommitMessage(msg string) {
 		g.CommitSpecifiedMsgList = append(g.CommitSpecifiedMsgList, fmt.Sprintf("fixup! %s", msg))
 	}
 }
+
+// AddCommitHash insert commit hash
+func (g *GitCommitInfo) AddCommitHash() int {
+	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%h")
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		g.CommitHashList = append(g.CommitHashList, v)
+	}
+
+	headMax := len(g.CommitHashList) - 2
+	return headMax
+}
