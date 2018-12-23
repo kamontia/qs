@@ -56,6 +56,27 @@ func TestAddcommitMessage(t *testing.T) {
 	}
 }
 
+func TestAddCommitHash(t *testing.T) {
+	/*
+		AddCommitHash inserts gci.CommitHashList
+		from the result of `git log --oneline --format=%h`
+	*/
+	gci := SetGitExecuter(GitCommanderMock{}) // use mock for unit test
+	gci.AddCommitHash()
+
+	got := strings.Join(gci.CommitHashList, " ")
+	reg := regexp.MustCompile(`([a-z0-9]{7}\s*){6}`)
+	if !reg.MatchString(got) {
+		t.Fatalf("regexp %v do not match %v:", reg, got)
+	}
+}
+
 func (g GitCommanderMock) Commitlog(opts ...string) ([]byte, error) {
-	return []byte("test1\ntest2\ntest3\ntest4\ntest5\ntest6"), nil
+	if opts[1] == "--format=%s" { // for TestAddcommitMessage
+		return []byte("test1\ntest2\ntest3\ntest4\ntest5\ntest6"), nil
+	} else if opts[1] == "--format=%h" { // for TestAddcommitHash
+		return []byte("1a2b3c4\nd5e6f7g\n8h9i0j1\nk2l3m4n\n5o6p7q8\nr9s0t1u"), nil
+	} else {
+		return nil, nil
+	}
 }

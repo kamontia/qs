@@ -47,6 +47,7 @@ func (g *GitCommitInfo) AddReflogHash() {
 	}
 }
 
+// AddCommitMessage insert commit messages
 func (g *GitCommitInfo) AddCommitMessage(msg string) {
 	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%s")
 	if err != nil {
@@ -58,5 +59,18 @@ func (g *GitCommitInfo) AddCommitMessage(msg string) {
 		g.CommitMsgList = append(g.CommitMsgList, v)
 		g.CommitNewMsgList = append(g.CommitNewMsgList, fmt.Sprintf("fixup! %s", v))
 		g.CommitSpecifiedMsgList = append(g.CommitSpecifiedMsgList, fmt.Sprintf("fixup! %s", msg))
+	}
+}
+
+// AddCommitHash insert commit hash
+func (g *GitCommitInfo) AddCommitHash() {
+	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%h")
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		g.CommitHashList = append(g.CommitHashList, v)
 	}
 }

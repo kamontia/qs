@@ -79,29 +79,15 @@ func rangeValidation(headMax int, beginNumber int) bool {
 	return result
 }
 
-func getCommitHash(gci *model.GitCommitInfo) int {
-	out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		gci.CommitHashList = append(gci.CommitHashList, v)
-	}
-
-	headMax := len(gci.CommitHashList) - 2
-	return headMax
-}
-
 func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo, specifiedMsg string) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
-	headMax := getCommitHash(gci)
-
 	gci.AddReflogHash()
+	gci.AddCommitHash()
 	gci.AddCommitMessage(specifiedMsg)
+
+	headMax := len(gci.CommitHashList) - 2
 	if !rangeValidation(headMax, beginNumber) {
 		log.Error("Range validagion is failed")
 		os.Exit(1)
