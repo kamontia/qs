@@ -55,16 +55,16 @@ func Test_rangeVaridation(t *testing.T) {
 }
 
 func Test_validate(t *testing.T) {
-  isNum := validate("2")
-  if !isNum {
-    t.Errorf("validate return %v", isNum)
-  }
-  isNum = validate("2..4")
-  if !isNum {
-    t.Errorf("validate return %v", isNum)
-  }
-  isNum = validate("hoge")
-  if isNum {
-    t.Errorf("validate return %v", isNum)
-  }
+	isNum := validate("2")
+	if !isNum {
+		t.Errorf("validate return %v", isNum)
+	}
+	isNum = validate("2..4")
+	if !isNum {
+		t.Errorf("validate return %v", isNum)
+	}
+	isNum = validate("hoge")
+	if isNum {
+		t.Errorf("validate return %v", isNum)
+	}
 }

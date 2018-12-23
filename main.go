@@ -94,20 +94,6 @@ func getCommitHash(gci *model.GitCommitInfo) int {
 	return headMax
 }
 
-func getCommitMessage(gci *model.GitCommitInfo, specifiedMsg string) {
-	out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
-	if err != nil {
-		log.Error(err)
-		os.Exit(1)
-	}
-
-	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
-		gci.CommitMsgList = append(gci.CommitMsgList, v)
-		gci.CommitNewMsgList = append(gci.CommitNewMsgList, fmt.Sprintf("fixup! %s", v))
-		gci.CommitSpecifiedMsgList = append(gci.CommitSpecifiedMsgList, fmt.Sprintf("fixup! %s", specifiedMsg))
-	}
-}
-
 func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCommitInfo, specifiedMsg string) {
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
@@ -115,7 +101,7 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	headMax := getCommitHash(gci)
 
 	gci.AddReflogHash()
-	getCommitMessage(gci, specifiedMsg)
+	gci.AddCommitMessage(specifiedMsg)
 	if !rangeValidation(headMax, beginNumber) {
 		log.Error("Range validagion is failed")
 		os.Exit(1)
