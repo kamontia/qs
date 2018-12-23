@@ -24,8 +24,8 @@ type GitCommitInfo struct {
 	GitExecuter Executer
 }
 
-// NewGitCommitInfo is constructor for GitExecutor
-func NewGitCommitInfo(e Executer) *GitCommitInfo {
+// SetGitExecuter is constructor for GitExecutor
+func SetGitExecuter(e Executer) *GitCommitInfo {
 	return &GitCommitInfo{
 		GitExecuter: e,
 	}

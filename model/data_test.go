@@ -4,9 +4,12 @@ import (
 	"testing"
 )
 
+// GitCommanderMock is mock of exuecuter
+type GitCommanderMock struct{}
+
 func TestAddReflogHash(t *testing.T) {
 
-	gci := NewGitCommitInfo(testExecuter{}) // use mock for unit test
+	gci := SetGitExecuter(GitCommanderMock{}) // use mock for unit test
 	gci.AddReflogHash()
 
 	got := len(gci.ReflogHashList)
@@ -16,9 +19,6 @@ func TestAddReflogHash(t *testing.T) {
 	}
 }
 
-// testExecuter is mock of exuecuter
-type testExecuter struct{}
-
-func (g testExecuter) Reflog(opt string) ([]byte, error) {
+func (g GitCommanderMock) Reflog(opt string) ([]byte, error) {
 	return []byte("a517e3b\na517e3b\n0b860a1\na517e3b\na517e3b\n0b860a1"), nil
 }

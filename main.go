@@ -240,7 +240,7 @@ func main() {
 
 	app.Action = func(c *cli.Context) error {
 		/* Create GitCommit Info */
-		gci := model.NewGitCommitInfo(model.GitCommander{})
+		gci := model.SetGitExecuter(model.GitCommander{})
 
 		if !validate(c.String("number")) {
 			log.Error("invalid number flag")
