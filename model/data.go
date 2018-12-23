@@ -47,6 +47,7 @@ func (g *GitCommitInfo) AddReflogHash() {
 	}
 }
 
+// AddCommitMessage insert commit messages
 func (g *GitCommitInfo) AddCommitMessage(msg string) {
 	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%s")
 	if err != nil {

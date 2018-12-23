@@ -12,7 +12,7 @@ func (g GitCommander) Reflog(opt string) ([]byte, error) {
 	return exec.Command("git", "reflog", opt).Output()
 }
 
-// Execute git log opts
+// Commitlog Execute git log opts
 func (g GitCommander) Commitlog(opts ...string) ([]byte, error) {
 	return exec.Command("git", "log", opts[0], opts[1]).Output()
 }
