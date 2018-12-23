@@ -2,8 +2,6 @@ package model
 
 import (
 	"testing"
-
-	"github.com/k0kubun/pp"
 )
 
 func TestAddReflogHash(t *testing.T) {
@@ -11,7 +9,6 @@ func TestAddReflogHash(t *testing.T) {
 	gci := NewGitCommitInfo(testExecuter{}) // use mock for unit test
 	gci.AddReflogHash()
 
-	pp.Print(gci.ReflogHashList)
 	got := len(gci.ReflogHashList)
 	want := 6
 	if got != want {

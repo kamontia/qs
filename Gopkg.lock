@@ -2,14 +2,6 @@
 
 
 [[projects]]
-  digest = "1:16dd6b893b78a50564cdde1d9f7ea67224dece11bb0886bd882f1dc3dc1d440d"
-  name = "github.com/k0kubun/pp"
-  packages = ["."]
-  pruneopts = "UT"
-  revision = "027a6d1765d673d337e687394dbe780dd64e2a1e"
-  version = "v2.3.0"
-
-[[projects]]
   digest = "1:0a69a1c0db3591fcefb47f115b224592c8dfa4368b7ba9fae509d5e16cdc95c8"
   name = "github.com/konsorten/go-windows-terminal-sequences"
   packages = ["."]
@@ -72,7 +64,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/k0kubun/pp",
     "github.com/mattn/go-colorable",
     "github.com/sirupsen/logrus",
     "github.com/urfave/cli",
