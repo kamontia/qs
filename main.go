@@ -83,10 +83,11 @@ func checkCurrentCommit(f bool, beginNumber int, endNumber int, gci *model.GitCo
 	var force = f
 	var sNum = strconv.Itoa(beginNumber)
 
-	headMax := gci.AddCommitHash()
-
 	gci.AddReflogHash()
+	gci.AddCommitHash()
 	gci.AddCommitMessage(specifiedMsg)
+
+	headMax := len(gci.CommitHashList) - 2
 	if !rangeValidation(headMax, beginNumber) {
 		log.Error("Range validagion is failed")
 		os.Exit(1)

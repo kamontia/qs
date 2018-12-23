@@ -63,7 +63,7 @@ func (g *GitCommitInfo) AddCommitMessage(msg string) {
 }
 
 // AddCommitHash insert commit hash
-func (g *GitCommitInfo) AddCommitHash() int {
+func (g *GitCommitInfo) AddCommitHash() {
 	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%h")
 	if err != nil {
 		log.Error(err)
@@ -73,7 +73,4 @@ func (g *GitCommitInfo) AddCommitHash() int {
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		g.CommitHashList = append(g.CommitHashList, v)
 	}
-
-	headMax := len(g.CommitHashList) - 2
-	return headMax
 }

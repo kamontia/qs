@@ -60,15 +60,9 @@ func TestAddcommitHash(t *testing.T) {
 	/*
 		AddcommitHash inserts gci.CommitHashList
 		from the result of `git log --oneline --format=%h`
-		and returns headMax
 	*/
 	gci := SetGitExecuter(GitCommanderMock{}) // use mock for unit test
-
-	act := gci.AddCommitHash()
-	exp := 4
-	if act != exp {
-		t.Fatalf("expect %v but actual %v:", exp, act)
-	}
+	gci.AddCommitHash()
 
 	got := strings.Join(gci.CommitHashList, " ")
 	reg := regexp.MustCompile(`([a-z0-9]{7}\s*){6}`)
