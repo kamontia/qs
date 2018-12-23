@@ -1,6 +1,8 @@
 package model
 
-import "os/exec"
+import (
+	"os/exec"
+)
 
 // GitCommander executer exec.Command(git **)
 type GitCommander struct{}
@@ -11,15 +13,14 @@ func (g GitCommander) Reflog(opt string) ([]byte, error) {
 }
 
 // Execute git log opts
-func (g GitCommander) Commitlog(opt string) ([]byte, error) {
-	return exec.Command("git", "log", opt).Output()
+func (g GitCommander) Commitlog(opts ...string) ([]byte, error) {
+	return exec.Command("git", "log", opts[0], opts[1]).Output()
 }
 
 // TODO: Implemantation
 // --------------------------------------
 //
 // out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
-// out, err := exec.Command("git", "log", "--oneline", "--format=%s").Output()
 // out, err := exec.Command("git", "log", "--oneline", "-n", sNum).Output()
 
 // cmd = exec.Command("git", "reset", "--hard", gci.ReflogHashList[0])

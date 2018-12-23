@@ -1,6 +1,7 @@
 package model
 
 import (
+	"fmt"
 	"os"
 	"regexp"
 
@@ -10,6 +11,7 @@ import (
 // Executer is interface of git command
 type Executer interface {
 	Reflog(opt string) ([]byte, error)
+	Commitlog(opts ...string) ([]byte, error)
 }
 
 // GitCommitInfo is git information struct
@@ -42,5 +44,19 @@ func (g *GitCommitInfo) AddReflogHash() {
 
 	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
 		g.ReflogHashList = append(g.ReflogHashList, v)
+	}
+}
+
+func (g *GitCommitInfo) AddCommitMessage(msg string) {
+	out, err := g.GitExecuter.Commitlog("--oneline", "--format=%s")
+	if err != nil {
+		log.Error(err)
+		os.Exit(1)
+	}
+
+	for _, v := range regexp.MustCompile("\r\n|\n|\r").Split(string(out), -1) {
+		g.CommitMsgList = append(g.CommitMsgList, v)
+		g.CommitNewMsgList = append(g.CommitNewMsgList, fmt.Sprintf("fixup! %s", v))
+		g.CommitSpecifiedMsgList = append(g.CommitSpecifiedMsgList, fmt.Sprintf("fixup! %s", msg))
 	}
 }
