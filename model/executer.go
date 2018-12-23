@@ -15,7 +15,7 @@ func (g GitCommander) Commitlog(opt string) ([]byte, error) {
 	return exec.Command("git", "log", opt).Output()
 }
 
-// TODO: このあたりをまるっと実装する
+// TODO: Implemantation
 // --------------------------------------
 //
 // out, err := exec.Command("git", "log", "--oneline", "--format=%h").Output()
