@@ -56,9 +56,9 @@ func TestAddcommitMessage(t *testing.T) {
 	}
 }
 
-func TestAddcommitHash(t *testing.T) {
+func TestAddCommitHash(t *testing.T) {
 	/*
-		AddcommitHash inserts gci.CommitHashList
+		AddCommitHash inserts gci.CommitHashList
 		from the result of `git log --oneline --format=%h`
 	*/
 	gci := SetGitExecuter(GitCommanderMock{}) // use mock for unit test
