@@ -5,6 +5,7 @@ import (
 	"os"
 
 	"github.com/kamontia/qs/model"
+	"github.com/kamontia/qs/utils"
 	"github.com/urfave/cli"
 )
 
@@ -21,14 +22,14 @@ var Commands = []cli.Command{
 		},
 		Action: func(c *cli.Context) error {
 			gci := model.SetGitExecuter(model.GitCommander{})
-			validate(c.String("number"))
+			utils.Validate(c.String("number"))
 			specifiedMsg := c.String("message")
 
-			beginNumber, endNumber := pickupSquashRange(c.String("number"))
-			logrusInit(c.Bool("debug"))
+			beginNumber, endNumber := utils.PickupSquashRange(c.String("number"))
+			utils.LogrusInit(c.Bool("debug"))
 			gci.AddCommitHash()
 			gci.AddCommitMessage(specifiedMsg)
-			displayCommitHashAndMessage(gci, beginNumber, endNumber)
+			gci.DisplayCommitHashAndMessage(beginNumber, endNumber)
 			return nil
 		},
 	},
