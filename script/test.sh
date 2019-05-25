@@ -82,16 +82,19 @@ test_rebase_abort () {
    git add file-11
    git commit -m "Add file-11"
 
+   echo "Add some modification" >> file-11
+   HAS_UNMODIFIED_FILE=$(git status --short | grep file-11 | wc -l)
+
    set +e
    REFLOG_HASH_1=$(git log --oneline --format=%h|head -n1)
    ./"${EXEC_COMMAND}" -n 2..5 -f -d
    REFLOG_HASH_2=$(git log --oneline --format=%h|head -n 1)
    set -e
-   if [[ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}" ]]; then
+   if [ "${REFLOG_HASH_1}" == "${REFLOG_HASH_2}"  -a "${HAS_UNMODIFIED_FILE}" != "0" ]; then
      echo "[passed] RUN ./${EXEC_COMMAND} -n 2..5 -f -d" >> ./../test-$$-result
    else
      echo "[failed] RUN ./${EXEC_COMMAND} -n 2..5 -f -d" >> ./../test-$$-result
-   fi 
+   fi
    teardown
 }
 
@@ -172,7 +175,6 @@ test_signal_handling() {
   SIGNAL="$5" # 2:SIGINT 15:SIGTERM
   VALIDATION_FILE=$(mktemp tmp-XXXXX)  # Temporary file to validate this test.
   VALIDATION_FILE_ABS_PATH=$(pwd)/${VALIDATION_FILE}
-  
   setup
   set +e
   REFLOG_HASH_1=$(git log --oneline --format=%h|head -n 1)
