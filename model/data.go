@@ -162,7 +162,7 @@ func DoRecovery(doneCh chan struct{}, gci *GitCommitInfo) {
 	if err := cmd.Run(); err != nil {
 		log.Error(err)
 	}
-	cmd = exec.Command("git", "reset", "--hard", gci.ReflogHashList[0])
+	cmd = exec.Command("git", "reset", "--mixed", gci.ReflogHashList[0])
 	if err := cmd.Run(); err != nil {
 		log.Error(err)
 	}
