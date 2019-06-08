@@ -8,13 +8,13 @@ import (
 type GitCommander struct{}
 
 // Reflog execute ("git" "reflog" opt)
-func (g GitCommander) Reflog(opt string) ([]byte, error) {
-	return exec.Command("git", "reflog", opt).Output()
+func (g GitCommander) Reflog(opts ...string) ([]byte, error) {
+	return exec.Command("git", "reflog", opts[0], opts[1], opts[2]).Output()
 }
 
 // Commitlog Execute git log opts
 func (g GitCommander) Commitlog(opts ...string) ([]byte, error) {
-	return exec.Command("git", "log", opts[0], opts[1]).Output()
+	return exec.Command("git", "log", opts[0], opts[1], opts[2]).Output()
 }
 
 // TODO: Implemantation

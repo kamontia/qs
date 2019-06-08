@@ -21,15 +21,15 @@ var Commands = []cli.Command{
 			},
 		},
 		Action: func(c *cli.Context) error {
-			gci := model.SetGitExecuter(model.GitCommander{})
+			gitCommand := model.SetGitExecuter(model.GitCommander{})
 			utils.Validate(c.String("number"))
 			specifiedMsg := c.String("message")
+			gitCommand.StartHeadIndex, gitCommand.EndHeadIndex = utils.PickupSquashRange(c.String("number"))
+			gitCommand.GitInfo = make([]model.CommitInfo, gitCommand.StartHeadIndex+2)
+			gitCommand.AddCommitHash()
+			gitCommand.AddCommitMessage(specifiedMsg)
 
-			beginNumber, endNumber := utils.PickupSquashRange(c.String("number"))
-			utils.LogrusInit(c.Bool("debug"))
-			gci.AddCommitHash()
-			gci.AddCommitMessage(specifiedMsg)
-			gci.DisplayCommitHashAndMessage(beginNumber, endNumber)
+			gitCommand.DisplayCommitHashAndMessage(gitCommand.EndHeadIndex, gitCommand.StartHeadIndex)
 			return nil
 		},
 	},

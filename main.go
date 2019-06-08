@@ -42,49 +42,67 @@ func main() {
 	app.CommandNotFound = CommandNotFound
 
 	app.Action = func(c *cli.Context) error {
-		/* Create GitCommit Info */
-		gci := model.SetGitExecuter(model.GitCommander{})
-
 		if !utils.Validate(c.String("number")) {
 			log.Error("invalid number flag")
 			os.Exit(1)
 		}
 
+		/* Create GitCommit Info */
+		// gci := model.SetGitExecuter(model.GitCommander{})
+
+		// gci := make([]model.GitCommitInfo, endNumber-beginNumber+1)
+		// for i := range gci {
+		// 	gci[i].RangeArray = ""
+		// 	gci[i].CommitMsgList = ""
+		// 	gci[i].CommitHashList = ""
+		// 	gci[i].CommitNewMsgList = ""
+		// 	gci[i].CommitSpecifiedMsgList = ""
+		// 	gci[i].ReflogHashList = ""
+		// 	gci[i].CommitMessageRef = nil
+		// 	gci[i].GitExecuter = model.SetGitExecuter(model.GitCommander{})
+		// }
+
+		gitCommand := model.SetGitExecuter(model.GitCommander{})
+		gitCommand.StartHeadIndex, gitCommand.EndHeadIndex = utils.PickupSquashRange(c.String("number"))
+		utils.LogrusInit(c.Bool("debug"))
+		gitCommand.GitInfo = make([]model.CommitInfo, gitCommand.StartHeadIndex+1)
+
 		specifiedMsg := c.String("message")
 
-		beginNumber, endNumber := utils.PickupSquashRange(c.String("number"))
-		utils.LogrusInit(c.Bool("debug"))
-		model.CheckCurrentCommit(c.Bool("force"), beginNumber, endNumber, gci, specifiedMsg)
+		model.CheckCurrentCommit(c.Bool("force"), gitCommand.StartHeadIndex, gitCommand.EndHeadIndex, gitCommand, specifiedMsg)
 
 		/* Start: Signal Handling Process */
-		wg, doneCh, sigCh := model.StartSignalHandling(gci)
+
+		wg, doneCh, sigCh := model.StartSignalHandling(gitCommand)
 
 		/* Suppress vim editor launching */
 		os.Setenv("GIT_EDITOR", ":")
 
-		for i := beginNumber; i >= 0; i-- {
+		for i := gitCommand.StartHeadIndex; i >= 0; i-- {
 			specifiedHead := fmt.Sprintf("HEAD~%d", i+1)
 			var specifiedExec string
-
-			if specifiedMsg != "" {
-				if beginNumber == i {
-					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", specifiedMsg)
-				} else if utils.NeedsChangeMessage(i, beginNumber, endNumber) {
-					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitSpecifiedMsgList[beginNumber])
-				} else {
-					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
+			// fmt.Printf("StartIndex:%d EndIndex:%d NowIndex:%d Specified:%s\n", gitCommand.StartHeadIndex, gitCommand.EndHeadIndex, i, specifiedMsg)
+			if utils.NeedsChangeMessage(i, gitCommand.StartHeadIndex, gitCommand.EndHeadIndex) { // リベース対象のコミット
+				if specifiedMsg == "" { // fixup パターン
+					if gitCommand.MakeMesasgeOption(i, gitCommand.StartHeadIndex, "") == true {
+						specifiedExec = fmt.Sprintf("--exec=git commit --amend -F .qstemp")
+					} else {
+						log.Error("Error")
+					}
+				} else { // squash パターン
+					if gitCommand.MakeMesasgeOption(i, gitCommand.StartHeadIndex, specifiedMsg) == true {
+						specifiedExec = fmt.Sprintf("--exec=git commit --amend -F .qstemp")
+					} else {
+						log.Error("Error")
+					}
 				}
 			} else {
-				if utils.NeedsChangeMessage(i, beginNumber, endNumber) {
-					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitNewMsgList[beginNumber])
-				} else {
-					specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gci.CommitMsgList[i])
-				}
+				// リベース対象外のコミットなので、Subjectをそのまま
+				specifiedExec = fmt.Sprintf("--exec=git commit --amend -m\"%s\"", gitCommand.GitInfo[i].CommitMessageRef.Subject)
 			}
 
 			cmd := exec.Command("git", "rebase", specifiedHead, specifiedExec)
 			log.Debugf("git rebase HEAD~%d %s\n", i, specifiedExec)
-
 			if c.Bool("debug") {
 				cmd.Stdin = os.Stdin
 				cmd.Stdout = os.Stdout
@@ -95,12 +113,12 @@ func main() {
 				cmd.Stderr = nil
 			}
 			if err := cmd.Run(); err != nil {
-				model.DoRecovery(doneCh, gci)
+				model.DoRecovery(doneCh, gitCommand)
 			}
 		}
 
 		/* git rebase with autosquash option */
-		specifiedHead := fmt.Sprintf("HEAD~%d", beginNumber+1)
+		specifiedHead := fmt.Sprintf("HEAD~%d", gitCommand.StartHeadIndex+1)
 		cmd := exec.Command("git", "rebase", "-i", "--autosquash", "--autostash", specifiedHead, "--quiet", "--preserve-merges")
 
 		/* Transfer the command I/O to Standard I/O */
@@ -109,7 +127,7 @@ func main() {
 		cmd.Stderr = os.Stderr
 
 		if err := cmd.Run(); err != nil {
-			model.DoRecovery(doneCh, gci)
+			model.DoRecovery(doneCh, gitCommand)
 		}
 		log.Debug("rebase completed")
 
@@ -118,5 +136,16 @@ func main() {
 
 		return nil
 	}
+
+	cmd := exec.Command("rm", ".qstemp")
+	if err := cmd.Run(); err != nil {
+		fmt.Println(err)
+	}
+
 	app.Run(os.Args)
+}
+
+func fileExists(filename string) bool {
+	_, err := os.Stat(filename)
+	return err == nil
 }
