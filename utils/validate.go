@@ -24,8 +24,8 @@ func RangeValidation(headMax int, beginNumber int) bool {
 	return result
 }
 
-func NeedsChangeMessage(i int, begin int, end int) bool {
-	if begin > i && i >= end {
+func NeedsChangeMessage(target int, begin int, end int) bool {
+	if target <= begin && target >= end {
 		return true
 	} else {
 		return false
@@ -37,6 +37,15 @@ func Validate(n string) bool {
 	return r.MatchString(n)
 }
 
+/*
+	$ qs -n 1..4
+	HEAD~0:
+	HEAD~1:  <- end
+	HEAD~2:
+	HEAD~3:
+	HEAD~4:  <- start
+	HEAD~5:
+*/
 func PickupSquashRange(num string) (int, int) {
 	/* TODO: Check error strictly */
 	var error error

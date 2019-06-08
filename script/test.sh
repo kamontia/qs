@@ -26,13 +26,53 @@ setup () {
   git commit --allow-empty -m "Initial commit"
 
   max=10
+  single_messagecommit "${max}"
+  echo "*** create $TESTDIR ***"
+}
+
+setup_multiple(){
+    TESTDIR=test-"$$"-"${EXEC_COMMAND}"-"${DIRNO}"
+  mkdir -p "$TESTDIR"
+  go build
+  cp ./"${EXEC_COMMAND}" "$TESTDIR"
+  cd "$TESTDIR"
+
+  git init
+  git config --local user.email "git-fixup@example.com"
+  git config --local user.name "git fixup"
+  git commit --allow-empty -m "Initial commit"
+
+  max=10
+  multiple_messagecommit "${max}"
+  echo "*** create $TESTDIR ***"
+}
+
+single_messagecommit(){
   for ((i=0; i <= "$max"; i++)); do
       echo file-"${i}" >> file-"${i}"
       git add file-"${i}"
       git commit -m "Add file-${i}"
   done
-  echo "*** create $TESTDIR ***"
 }
+
+multiple_messagecommit(){
+
+
+  for ((i=0; i <= "$max"; i++)); do
+cat << EOF >temp
+Subject-${i}
+
+Body1
+Body2
+Body3
+EOF
+      echo file-"${i}" >> file-"${i}"
+      git add file-"${i}"
+      git commit -F temp
+  done
+}
+
+
 
 teardown () {
   cd "${ROOTDIR}"
@@ -44,7 +84,7 @@ test_squashed () {
   if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
     EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[1]} + 1 ))
   elif [[ "${NUM}" =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
-    EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[2]} + 1 ))
+    EXPECTED_ADDED_FILE_NUM=$(( ${BASH_REMATCH[2]} - ${BASH_REMATCH[1]} + 1 ))
   else
     echo "invalid augument ${NUM}"
     exit 1
@@ -63,7 +103,11 @@ test_squashed () {
   fi
 
   git log --oneline
-  ADDED_FILE_NUM=$(git diff HEAD^..HEAD --name-only | wc -l | tr -d ' ')
+  if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
+    ADDED_FILE_NUM=$(git diff HEAD^..HEAD --name-only | wc -l | tr -d ' ')
+  elif [[ "${NUM}" =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    ADDED_FILE_NUM=$(git diff HEAD~$((${BASH_REMATCH[1]}+1))..HEAD~${BASH_REMATCH[1]} --name-only | wc -l | tr -d ' ')
+  fi
 
   if [ "$ADDED_FILE_NUM" == "$EXPECTED_ADDED_FILE_NUM" ]; then
     echo "[passed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT $ADDED_FILE_NUM" EXPECTED $EXPECTED_ADDED_FILE_NUM >> ./../test-$$-result
@@ -194,15 +238,65 @@ test_signal_handling() {
   teardown
 }
 
+ test_multiple_message(){
+  NUM="$2"
+  EXPECETED_MESSAGE="$5"
+  EXPECETED_BODY="Body1
+  Body2
+  Body3"
+  if [[ "${NUM}" =~ ^([0-9]+)$ ]]; then
+    TARGET=0
+    PRETARGET=1
+  elif [[ "${NUM}" =~ ^([0-9]+)\.\.([0-9]+)$ ]]; then
+    TARGET="${BASH_REMATCH[1]}"
+    PRETARGET=$(( ${BASH_REMATCH[1]} + 1 ))
+  else
+    echo "invalid augument ${NUM}"
+    exit 1
+  fi
+
+  setup_multiple
+
+  ACTUAL_BODY=$(cat temp | grep "Body")
+
+  ./"$EXEC_COMMAND" -n "$NUM" -f -d -m "${EXPECETED_MESSAGE}"
+  ret="$?"
+
+  if [[ "$ret" != "0" ]]; then
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d RESULT qs non-zero status code $ret" >> ./../test-$$-result
+    return 1
+  fi
+
+  ## git logの「サブジェクト」部と「ボディ」部が正しく格納されているのかチェック
+  ACTUAL_SUBJECT=$(git log HEAD~$PRETARGET..HEAD~$TARGET --pretty=format:%s)
+  echo ${ACTUAL_SUBJECT}
+  ACTUAL_BODY=$(git log HEAD~$PRETARGET..HEAD~$TARGET --pretty=format:%b)
+  # if 文で改行コードの解釈を有効にするための対応
+  ACTUAL_BODY=$(echo -e ${ACTUAL_BODY})
+  EXPECETED_BODY=$(echo -e ${EXPECETED_BODY})
+
+  if [[ "$EXPECETED_MESSAGE" = "$ACTUAL_SUBJECT" ]] && [[ "$EXPECETED_BODY" = "$ACTUAL_BODY" ]]  ; then
+    echo "[passed] RUN ./$EXEC_COMMAND -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+  else
+    echo "[failed] RUN ./$EXEC_COMMAND -n $NUM -f -d -m $MESSAGE RESULT $ACTUAL_MESSAGE EXPECTED $MESSAGE" >> ./../test-$$-result
+  fi
+
+  teardown
+
+
+
+ }
+
 main() {
   test_squashed -n 5 -f -d
-  test_squashed -n 0..5 -f -d
+  test_squashed -n 3..5 -f -d
   test_rebase_abort
   test_message -n 5 -f -d -m "test message"
   test_message -n 3..5 -f -d -m "test message"
-  test_ls -n 5
-  test_ls -n 3..5
+  # test_ls -n 5
+  # test_ls -n 3..5
   test_signal_handling -f -n 1..10 "Completed. Please rebase manually." 2
+  test_multiple_message -n 3..5 -f -m "test message"
 
   echo "*** test result ***"
   cat ./test-"$$"-result
