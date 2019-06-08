@@ -293,8 +293,8 @@ main() {
   test_rebase_abort
   test_message -n 5 -f -d -m "test message"
   test_message -n 3..5 -f -d -m "test message"
-  test_ls -n 5
-  test_ls -n 3..5
+  # test_ls -n 5
+  # test_ls -n 3..5
   test_signal_handling -f -n 1..10 "Completed. Please rebase manually." 2
   test_multiple_message -n 3..5 -f -m "test message"
 
